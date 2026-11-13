@@ -236,8 +236,8 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Image URL</label>
-                    <input type="url" id="productImage" placeholder="https://images.unsplash.com/..." required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product Image File</label>
+                    <input type="file" id="productImageFile" accept="image/*" required class="w-full p-2 border rounded-xl text-sm bg-white cursor-pointer">
                 </div>
                 <div class="flex justify-end gap-2 pt-3">
                     <button type="button" onclick="closeAddProductModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
@@ -479,25 +479,49 @@
             }
         }
 
-        async function handleAddProduct(e) {
+      async function handleAddProduct(e) {
             e.preventDefault();
             const name = document.getElementById('productName').value.trim();
             const category = document.getElementById('productCategory').value.trim();
             const price = parseFloat(document.getElementById('productPrice').value);
-            const image = document.getElementById('productImage').value.trim();
+            
+            const fileInput = document.getElementById('productImageFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select an image file.');
+                return;
+            }
 
             try {
-                const { error } = await supabaseClient
-                    .from('products')
-                    .insert([{ name, category, price, image }]);
+                // 1. Upload file to your exact bucket name: 'product-image'
+                const filePath = `product_${Date.now()}_${file.name}`;
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                    .from('product-image')
+                    .upload(filePath, file);
 
-                if (error) throw error;
-                alert('Product added successfully!');
+                if (uploadError) throw uploadError;
+
+                // 2. Get the public URL from your exact bucket name: 'product-image'
+                const { data: publicUrlData } = supabaseClient.storage
+                    .from('product-image')
+                    .getPublicUrl(filePath);
+
+                const imageUrl = publicUrlData.publicUrl;
+
+                // 3. Save product record with the image URL to the database
+                const { error: dbError } = await supabaseClient
+                    .from('products')
+                    .insert([{ name, category, price, image: imageUrl }]);
+
+                if (dbError) throw dbError;
+
+                alert('Product and image uploaded successfully!');
                 e.target.reset();
                 closeAddProductModal();
                 loadProducts();
             } catch (error) {
-                console.error('Error adding product:', error.message);
+                console.error('Error uploading product:', error.message);
                 alert('Failed to save product: ' + error.message);
             }
         }
@@ -534,14 +558,18 @@
                         <td class="p-4 font-bold text-violet-600">${o.id}</td>
                         <td class="p-4 font-medium text-slate-900">${o.customer_name || 'Customer'}</td>
                         <td class="p-4 text-slate-600">${new Date(o.date).toLocaleDateString()}</td>
-                        <td class="p-4 text-slate-600 text-xs">${Array.isArray(o.items) ? o.items.map(i => `${i.name}`).join(', ') : 'Items'}</td>
+                        <td class="p-4 text-slate-600 text-xs">${Array.isArray(o.items) ? o.items.map(i => `${i.name} (x${i.quantity || 1})`).join(', ') : 'Items'}</td>
                         <td class="p-4 font-extrabold text-slate-900">$${Number(o.total).toFixed(2)}</td>
                         <td class="p-4">
-                            <span class="text-xs font-bold px-3 py-1.5 rounded-full border ${
+                            <select onchange="updateOrderStatus('${o.id}', this.value)" class="text-xs font-bold px-3 py-1.5 rounded-xl border cursor-pointer outline-none transition ${
                                 o.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 
                                 o.status === 'Shipped' ? 'bg-blue-50 text-blue-600 border-blue-200' : 
                                 'bg-amber-50 text-amber-600 border-amber-200'
-                            }">${o.status || 'Processing'}</span>
+                            }">
+                                <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            </select>
                         </td>
                     </tr>
                 `;
@@ -853,8 +881,54 @@
         window.addEventListener('DOMContentLoaded', () => {
     loadStorefrontProducts(); // or loadProducts()
 });
+//ORDERSTATUSUPDATE
+async function updateOrderStatus(orderId, newStatus) {
+    try {
+        const { error } = await supabaseClient
+            .from('orders')
+            .update({ status: newStatus })
+            .eq('id', orderId);
+
+        if (error) throw error;
+
+        // Update local state and re-render the admin orders table smoothly
+        const order = adminOrders.find(o => o.id === orderId);
+        if (order) {
+            order.status = newStatus;
+        }
+        
+        renderAdminOrders();
+        console.log(`Order ${orderId} successfully updated to ${newStatus}`);
+    } catch (error) {
+        console.error('Error updating order status:', error.message);
+        alert('Failed to update order status: ' + error.message);
+    }
+}
     </script>
 
+<!-- Admin Footer -->
+<footer class="mt-auto bg-slate-900 text-slate-400 border-t border-slate-800 py-6 px-6 text-xs">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- Brand & Copyright -->
+        <div class="flex items-center space-x-2">
+            <span class="font-bold text-slate-200">AURA STORE</span>
+            <span>&copy; 2026 Prixy S.A. All rights reserved.</span>
+        </div>
+
+        <!-- System Status Indicator -->
+        <div class="flex items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-slate-300 font-medium">Supabase Database & Storage: Connected</span>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="flex items-center space-x-4">
+            <a href="index.html" class="hover:text-white transition">Storefront</a>
+            <span class="text-slate-700">|</span>
+            <span class="text-slate-500">Admin Console v2.4</span>
+        </div>
+    </div>
+</footer>
     
 </body>
 </html>
