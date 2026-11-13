@@ -281,15 +281,30 @@
             <form onsubmit="handleChangeAdminPassword(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Current Password</label>
-                    <input type="password" id="currentAdminPass" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                    <div class="relative">
+                        <input type="password" id="currentAdminPass" required class="w-full p-2.5 pr-10 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                        <button type="button" onclick="togglePasswordVisibility('currentAdminPass', 'currentAdminPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i id="currentAdminPassIcon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">New Password</label>
-                    <input type="password" id="newAdminPass" minlength="6" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                    <div class="relative">
+                        <input type="password" id="newAdminPass" minlength="6" required class="w-full p-2.5 pr-10 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                        <button type="button" onclick="togglePasswordVisibility('newAdminPass', 'newAdminPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i id="newAdminPassIcon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Confirm New Password</label>
-                    <input type="password" id="confirmAdminPass" minlength="6" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                    <div class="relative">
+                        <input type="password" id="confirmAdminPass" minlength="6" required class="w-full p-2.5 pr-10 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                        <button type="button" onclick="togglePasswordVisibility('confirmAdminPass', 'confirmAdminPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i id="confirmAdminPassIcon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-3">
                     <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
@@ -315,7 +330,12 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Password</label>
-                    <input type="password" id="subadminPass" placeholder="••••••••" minlength="6" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                    <div class="relative">
+                        <input type="password" id="subadminPass" placeholder="••••••••" minlength="6" required class="w-full p-2.5 pr-10 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                        <button type="button" onclick="togglePasswordVisibility('subadminPass', 'subadminPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i id="subadminPassIcon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="space-y-2 pt-2 border-t">
@@ -351,14 +371,19 @@
                 </button>
             </div>
             <form onsubmit="handleSaveEditedSubadmin(event)" class="space-y-4">
-                <input type="hidden" id="editSubadminIndex">
+                <input type="hidden" id="editSubadminId">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Username</label>
                     <input type="text" id="editSubadminUser" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Password</label>
-                    <input type="text" id="editSubadminPass" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                    <div class="relative">
+                        <input type="text" id="editSubadminPass" required class="w-full p-2.5 pr-10 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                        <button type="button" onclick="togglePasswordVisibility('editSubadminPass', 'editSubadminPassIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                            <i id="editSubadminPassIcon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="space-y-2 pt-2 border-t">
@@ -395,7 +420,12 @@
                 <p class="text-xs text-slate-500">Enter your secure passcode to access store operations.</p>
             </div>
             <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-                <input type="password" id="adminPassInput" placeholder="Enter admin password" required class="w-full p-3 border rounded-xl text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-violet-500">
+                <div class="relative">
+                    <input type="password" id="adminPassInput" placeholder="Enter admin password" required class="w-full p-3 pr-10 border rounded-xl text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-violet-500">
+                    <button type="button" onclick="togglePasswordVisibility('adminPassInput', 'adminPassInputIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <i id="adminPassInputIcon" data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                </div>
                 <button type="submit" class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold hover:bg-violet-700 transition shadow-md cursor-pointer">Authenticate</button>
             </form>
             <a href="index.html" class="block text-xs font-semibold text-slate-400 hover:text-slate-600 transition">Return to Storefront</a>
@@ -414,7 +444,7 @@
 
         let adminProducts = [];
         let adminOrders = [];
-        let adminSubadmins = JSON.parse(localStorage.getItem('aura_subadmins')) || [];
+        let adminSubadmins = [];
         const DEFAULT_ADMIN_PASSWORD = "aura_secure_2026";
 
         function getAdminPassword() {
@@ -431,6 +461,22 @@
             } else {
                 loginModal.classList.remove('hidden');
             }
+        }
+
+        // Toggle Password Visibility with Eye / Eye-Off Icon
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
         }
 
         // Load Products from Supabase
@@ -479,7 +525,7 @@
             }
         }
 
-      async function handleAddProduct(e) {
+        async function handleAddProduct(e) {
             e.preventDefault();
             const name = document.getElementById('productName').value.trim();
             const category = document.getElementById('productCategory').value.trim();
@@ -494,22 +540,19 @@
             }
 
             try {
-                // 1. Upload file to your exact bucket name: 'product-image'
                 const filePath = `product_${Date.now()}_${file.name}`;
-                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                const { error: uploadError } = await supabaseClient.storage
                     .from('product-image')
                     .upload(filePath, file);
 
                 if (uploadError) throw uploadError;
 
-                // 2. Get the public URL from your exact bucket name: 'product-image'
                 const { data: publicUrlData } = supabaseClient.storage
                     .from('product-image')
                     .getPublicUrl(filePath);
 
                 const imageUrl = publicUrlData.publicUrl;
 
-                // 3. Save product record with the image URL to the database
                 const { error: dbError } = await supabaseClient
                     .from('products')
                     .insert([{ name, category, price, image: imageUrl }]);
@@ -577,6 +620,27 @@
 
             updateAnalyticsMetrics();
             lucide.createIcons();
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const { error } = await supabaseClient
+                    .from('orders')
+                    .update({ status: newStatus })
+                    .eq('id', orderId);
+
+                if (error) throw error;
+
+                const order = adminOrders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = newStatus;
+                }
+                
+                renderAdminOrders();
+            } catch (error) {
+                console.error('Error updating order status:', error.message);
+                alert('Failed to update order status: ' + error.message);
+            }
         }
 
         async function handleAddCoupon(e) {
@@ -703,34 +767,46 @@
             }
         }
 
+        // --- SUBADMIN MANAGEMENT & SUPABASE AUTH ---
+
+        async function loadSubadmins() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('subadmins')
+                    .select('*')
+                    .order('id', { ascending: true });
+
+                if (error) throw error;
+                adminSubadmins = data || [];
+                renderAdminSubadmins();
+            } catch (error) {
+                console.error('Error loading subadmins:', error.message);
+            }
+        }
+
         function renderAdminSubadmins() {
             const tableBody = document.getElementById('adminSubadminTable');
             if (!tableBody) return;
 
             if (adminSubadmins.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400">No subadmin accounts created.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400">No subadmin accounts found.</td></tr>`;
                 return;
             }
 
             tableBody.innerHTML = adminSubadmins.map((sub, index) => `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-4 font-bold text-slate-800 flex items-center gap-2">
-                        <i data-lucide="user" class="w-4 h-4 text-violet-600"></i> ${sub.username}
-                    </td>
+                    <td class="p-4 font-bold text-slate-800">${sub.username}</td>
                     <td class="p-4"><span class="bg-violet-50 text-violet-600 border border-violet-200 px-2.5 py-1 rounded-full text-xs font-semibold">Subadmin</span></td>
                     <td class="p-4 text-right space-x-2">
                         <button onclick="openEditSubadminModal(${index})" class="text-slate-400 hover:text-violet-600 transition p-1 cursor-pointer" title="Edit Subadmin"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                        <button onclick="deleteSubadmin(${index})" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer" title="Revoke Access"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteSubadmin(${sub.id})" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer" title="Revoke Subadmin"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
             lucide.createIcons();
         }
 
-        function openAddSubadminModal() { document.getElementById('addSubadminModal').classList.remove('hidden'); }
-        function closeAddSubadminModal() { document.getElementById('addSubadminModal').classList.add('hidden'); }
-
-        function handleSaveNewSubadmin(e) {
+        async function handleSaveNewSubadmin(e) {
             e.preventDefault();
             const username = document.getElementById('subadminUser').value.trim();
             const password = document.getElementById('subadminPass').value;
@@ -741,30 +817,62 @@
                 promos: document.getElementById('permPromos').checked
             };
 
-            adminSubadmins.push({ username, password, permissions });
-            localStorage.setItem('aura_subadmins', JSON.stringify(adminSubadmins));
+            try {
+                const { error } = await supabaseClient
+                    .from('subadmins')
+                    .insert([{ username, password, permissions }]);
 
-            renderAdminSubadmins();
-            closeAddSubadminModal();
-            e.target.reset();
+                if (error) throw error;
+
+                alert('Subadmin account created successfully in Supabase!');
+                closeAddSubadminModal();
+                e.target.reset();
+                loadSubadmins();
+            } catch (error) {
+                console.error('Error creating subadmin:', error.message);
+                alert('Failed to create subadmin: ' + error.message);
+            }
         }
 
-        function deleteSubadmin(index) {
-            adminSubadmins.splice(index, 1);
-            localStorage.setItem('aura_subadmins', JSON.stringify(adminSubadmins));
-            renderAdminSubadmins();
+        async function deleteSubadmin(id) {
+            if (!confirm('Are you sure you want to revoke this subadmin access?')) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('subadmins')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+                loadSubadmins();
+            } catch (error) {
+                console.error('Error deleting subadmin:', error.message);
+            }
         }
 
-        function handleAdminLogin(e) {
+        async function handleAdminLogin(e) {
             e.preventDefault();
             const inputPass = document.getElementById('adminPassInput').value;
             const isMaster = (inputPass === getAdminPassword());
-            const matchedSubadmin = adminSubadmins.find(sub => sub.password === inputPass);
+
+            let matchedSubadmin = null;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('subadmins')
+                    .select('*')
+                    .eq('password', inputPass);
+
+                if (!error && data && data.length > 0) {
+                    matchedSubadmin = data[0];
+                }
+            } catch (err) {
+                console.error('Supabase subadmin lookup error:', err);
+            }
 
             if (isMaster || matchedSubadmin) {
                 sessionStorage.setItem('aura_admin_authenticated', 'true');
                 sessionStorage.setItem('aura_admin_role', isMaster ? 'master' : 'subadmin');
-                if (!isMaster) {
+                if (!isMaster && matchedSubadmin) {
                     sessionStorage.setItem('aura_subadmin_perms', JSON.stringify(matchedSubadmin.permissions || {}));
                 }
                 document.getElementById('adminLoginModal').classList.add('hidden');
@@ -774,11 +882,12 @@
                 alert('Incorrect password. Access denied.');
                 document.getElementById('adminPassInput').value = '';
             }
-            supabaseClient.auth.signInWithEmailAndPassword('goodrichardremy@gmail.com', 'Remy@aura');
         }
 
         function adminLogout() {
             sessionStorage.removeItem('aura_admin_authenticated');
+            sessionStorage.removeItem('aura_admin_role');
+            sessionStorage.removeItem('aura_subadmin_perms');
             location.reload();
         }
 
@@ -830,11 +939,14 @@
             }
         }
 
+        function openAddSubadminModal() { document.getElementById('addSubadminModal').classList.remove('hidden'); }
+        function closeAddSubadminModal() { document.getElementById('addSubadminModal').classList.add('hidden'); }
+
         function openEditSubadminModal(index) {
             const sub = adminSubadmins[index];
             if (!sub) return;
 
-            document.getElementById('editSubadminIndex').value = index;
+            document.getElementById('editSubadminId').value = sub.id;
             document.getElementById('editSubadminUser').value = sub.username;
             document.getElementById('editSubadminPass').value = sub.password;
 
@@ -848,9 +960,9 @@
 
         function closeEditSubadminModal() { document.getElementById('editSubadminModal').classList.add('hidden'); }
 
-        function handleSaveEditedSubadmin(e) {
+        async function handleSaveEditedSubadmin(e) {
             e.preventDefault();
-            const index = Number(document.getElementById('editSubadminIndex').value);
+            const id = Number(document.getElementById('editSubadminId').value);
             const username = document.getElementById('editSubadminUser').value.trim();
             const password = document.getElementById('editSubadminPass').value;
 
@@ -860,75 +972,59 @@
                 promos: document.getElementById('editPermPromos').checked
             };
 
-            adminSubadmins[index] = { username, password, permissions };
-            localStorage.setItem('aura_subadmins', JSON.stringify(adminSubadmins));
-            renderAdminSubadmins();
-            closeEditSubadminModal();
+            try {
+                const { error } = await supabaseClient
+                    .from('subadmins')
+                    .update({ username, password, permissions })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                alert('Subadmin account updated successfully!');
+                closeEditSubadminModal();
+                loadSubadmins();
+            } catch (error) {
+                console.error('Error updating subadmin:', error.message);
+                alert('Failed to update subadmin: ' + error.message);
+            }
         }
 
         function openAddPromoModal() { document.getElementById('addPromoModal').classList.remove('hidden'); }
         function closeAddPromoModal() { document.getElementById('addPromoModal').classList.add('hidden'); }
 
-        // Initialize App on DOM Load
+        // Initialize App on DOM Load (Consolidated)
         window.addEventListener('DOMContentLoaded', () => {
             checkAdminAuth();
             loadProducts();
             loadCustomerOrders();
             loadPromoCodes();
-            renderAdminSubadmins();
+            loadSubadmins();
         });
-
-        window.addEventListener('DOMContentLoaded', () => {
-    loadStorefrontProducts(); // or loadProducts()
-});
-//ORDERSTATUSUPDATE
-async function updateOrderStatus(orderId, newStatus) {
-    try {
-        const { error } = await supabaseClient
-            .from('orders')
-            .update({ status: newStatus })
-            .eq('id', orderId);
-
-        if (error) throw error;
-
-        // Update local state and re-render the admin orders table smoothly
-        const order = adminOrders.find(o => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-        }
-        
-        renderAdminOrders();
-        console.log(`Order ${orderId} successfully updated to ${newStatus}`);
-    } catch (error) {
-        console.error('Error updating order status:', error.message);
-        alert('Failed to update order status: ' + error.message);
-    }
-}
     </script>
 
-<!-- Admin Footer -->
-<footer class="mt-auto bg-slate-900 text-slate-400 border-t border-slate-800 py-6 px-6 text-xs">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-        <!-- Brand & Copyright -->
-        <div class="flex items-center space-x-2">
-            <span class="font-bold text-slate-200">AURA STORE</span>
-            <span>&copy; 2026 Prixy S.A. All rights reserved.</span>
-        </div>
+    <!-- Admin Footer -->
+    <footer class="mt-auto bg-slate-900 text-slate-400 border-t border-slate-800 py-6 px-6 text-xs">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <!-- Brand & Copyright -->
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-slate-200">AURA STORE</span>
+                <span>&copy; 2026 Prixy S.A. All rights reserved.</span>
+            </div>
 
-        <!-- System Status Indicator -->
-        <div class="flex items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="text-slate-300 font-medium">Supabase Database & Storage: Connected</span>
-        </div>
+            <!-- System Status Indicator -->
+            <div class="flex items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-slate-300 font-medium">Supabase Database & Storage: Connected</span>
+            </div>
 
-        <!-- Quick Links -->
-        <div class="flex items-center space-x-4">
-            <a href="index.html" class="hover:text-white transition">Storefront</a>
-            <span class="text-slate-700">|</span>
-            <span class="text-slate-500">Admin Console v2.4</span>
+            <!-- Quick Links -->
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="hover:text-white transition">Storefront</a>
+                <span class="text-slate-700">|</span>
+                <span class="text-slate-500">Admin Console v2.4</span>
+            </div>
         </div>
-    </div>
-</footer>
+    </footer>
     
 </body>
 </html>
