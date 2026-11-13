@@ -381,83 +381,99 @@
         }
 
         // Fetch and Render Products from Supabase Cloud Database
-        async function loadStorefrontProducts() {
-            const gridContainer = document.getElementById('productGrid');
-            if (!gridContainer) return;
+       async function loadStorefrontProducts() {
+    const gridContainer = document.getElementById('productGrid');
+    if (!gridContainer) return;
 
-            gridContainer.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">Loading latest items...</div>`;
+    try {
+        // Ensure you select all columns or specifically include inventory_count
+        const { data: products, error } = await supabaseClient
+            .from('products')
+            .select('*') // or select('id, name, price, category, image, inventory_count')
+            .order('id', { ascending: true });
 
-            try {
-                const { data: products, error } = await supabaseClient
-                    .from('products')
-                    .select('*')
-                    .order('id', { ascending: true });
+        if (error) throw error;
 
-                if (error) throw error;
+        storeProducts = products || [];
+        renderProducts();
+    } catch (error) {
+        console.error('Error loading storefront products:', error.message);
+    }
+}
 
-                storeProducts = products || [];
+// Listen to real-time changes on the products table
+function subscribeToInventoryChanges() {
+    supabaseClient
+        .channel('public:products')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
+            console.log('Inventory change detected, reloading products...', payload);
+            loadStorefrontProducts(); // Automatically refresh products grid on stock change
+        })
+        .subscribe();
+}
 
-                if (storeProducts.length === 0) {
-                    gridContainer.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">No products available at the moment. Check back soon!</div>`;
-                    return;
-                }
+      function renderProducts() {
+    const grid = document.getElementById('productGrid');
+    const searchInput = document.getElementById('searchInput');
+    const search = searchInput ? searchInput.value.toLowerCase() : "";
 
-                renderProducts();
-            } catch (error) {
-                console.error('Error loading storefront products:', error.message);
-                gridContainer.innerHTML = `<div class="col-span-full text-center py-12 text-rose-500">Failed to load products from cloud database.</div>`;
-            }
+    const filtered = storeProducts.filter(p => {
+        const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+        const matchesSearch = p.name.toLowerCase().includes(search);
+        return matchesCat && matchesSearch;
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-medium">No products matching your search.</div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+        let reviews = productReviews[p.id] || [];
+        let avgRating = 5.0;
+        if (reviews.length > 0) {
+            const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+            avgRating = (sum / reviews.length).toFixed(1);
         }
 
-        function renderProducts() {
-            const grid = document.getElementById('productGrid');
-            const searchInput = document.getElementById('searchInput');
-            const search = searchInput ? searchInput.value.toLowerCase() : "";
+        // Low stock or Out of stock badge logic
+        let stockBadge = '';
+        let isOutOStock = p.inventory_count === 0;
+        
+        if (isOutOStock) {
+            stockBadge = `<span class="absolute top-3 right-3 bg-slate-900/90 text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Out of Stock</span>`;
+        } else if (p.inventory_count <= 5) {
+            stockBadge = `<span class="absolute top-3 right-3 bg-rose-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider animate-pulse">Only ${p.inventory_count} left!</span>`;
+        }
 
-            const filtered = storeProducts.filter(p => {
-                const matchesCat = activeCategory === 'All' || p.category === activeCategory;
-                const matchesSearch = p.name.toLowerCase().includes(search);
-                return matchesCat && matchesSearch;
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-medium">No products matching your search.</div>`;
-                return;
-            }
-
-            grid.innerHTML = filtered.map(p => {
-                let reviews = productReviews[p.id] || [];
-                let avgRating = 5.0;
-                if (reviews.length > 0) {
-                    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-                    avgRating = (sum / reviews.length).toFixed(1);
-                }
-
-                return `
-                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group">
-                        <div onclick="openProductModal(${p.id})" class="h-48 overflow-hidden bg-slate-100 relative cursor-pointer">
-                            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="${p.name}">
-                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-700">${p.category}</span>
+        return `
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group">
+                <div onclick="openProductModal(${p.id})" class="h-48 overflow-hidden bg-slate-100 relative cursor-pointer">
+                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="${p.name}">
+                    <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-700">${p.category}</span>
+                    ${stockBadge}
+                </div>
+                <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                        <h4 onclick="openProductModal(${p.id})" class="font-bold text-slate-900 group-hover:text-violet-600 transition line-clamp-1 cursor-pointer">${p.name}</h4>
+                        <div class="flex items-center gap-1 text-amber-500 text-xs font-bold my-1">
+                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                            <span>${avgRating}</span>
+                            <span class="text-slate-400 font-normal">(${reviews.length} reviews)</span>
                         </div>
-                        <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
-                            <div>
-                                <h4 onclick="openProductModal(${p.id})" class="font-bold text-slate-900 group-hover:text-violet-600 transition line-clamp-1 cursor-pointer">${p.name}</h4>
-                                <div class="flex items-center gap-1 text-amber-500 text-xs font-bold my-1">
-                                    <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
-                                    <span>${avgRating}</span>
-                                    <span class="text-slate-400 font-normal">(${reviews.length} reviews)</span>
-                                </div>
-                                <p class="text-sm font-extrabold text-slate-900 mt-1">$${Number(p.price).toFixed(2)}</p>
-                            </div>
-                            <button onclick="addToCart(${p.id})" type="button" class="w-full bg-slate-900 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-violet-600 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
-                                <i data-lucide="shopping-cart" class="w-4 h-4"></i> Add To Cart
-                            </button>
-                        </div>
+                        <p class="text-sm font-extrabold text-slate-900 mt-1">$${Number(p.price).toFixed(2)}</p>
                     </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-        }
+                    <button onclick="${isOutOStock ? '' : `addToCart(${p.id})`}" type="button" ${isOutOStock ? 'disabled' : ''} class="w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm ${
+                        isOutOStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-violet-600 cursor-pointer'
+                    }">
+                        <i data-lucide="${isOutOStock ? 'ban' : 'shopping-cart'}" class="w-4 h-4"></i> ${isOutOStock ? 'Sold Out' : 'Add To Cart'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    lucide.createIcons();
+}
 
         function setCategoryFilter(cat) {
             activeCategory = cat;
@@ -1177,6 +1193,149 @@
             </div>
         </div>
     </footer>
+
+<!-- AI Shopping Assistant Floating Widget -->
+ 
+<div id="aiChatWidget" class="fixed bottom-6 right-6 z-50">
+    <button onclick="toggleAIChat()" id="aiChatToggleBtn" class="bg-violet-600 hover:bg-violet-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition cursor-pointer">
+        <i data-lucide="bot" class="w-7 h-7"></i>
+    </button>
+    <!-- Place this directly below your chatbot avatar element -->
+<div class="text-[10px] font-bold text-slate-400 text-center tracking-wider mt-1">Oliver</div>
+
+    <div id="aiChatWindow" class="hidden absolute bottom-16 right-0 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden transition-all">
+        <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center font-bold text-xs">AI</div>
+                <div>
+                    <h3 class="text-sm font-bold">Aura Shopping Assistant</h3>
+                    <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online & Interactive
+                    </p>
+                </div>
+            </div>
+            <button onclick="toggleAIChat()" class="text-slate-400 hover:text-white cursor-pointer">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div id="aiChatMessages" class="p-4 h-80 overflow-y-auto space-y-3 text-xs bg-slate-50 flex flex-col">
+            <div class="bg-violet-50 text-slate-800 p-3 rounded-2xl max-w-[85%] self-start border border-violet-100">
+                Hi there! 👋 I'm Oliver, your interactive Aura Store shopping guide. Ask me anything about our products, recommendations, or stock!
+            </div>
+        </div>
+
+        <form onsubmit="handleInteractiveAISubmit(event)" class="p-3 bg-white border-t flex gap-2">
+            <input type="text" id="aiChatInput" placeholder="Ask me anything..." class="flex-1 p-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500">
+            <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">
+                <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Keep track of conversation history for a natural back-and-forth dialogue
+    let chatConversationHistory = [];
+
+    function toggleAIChat() {
+        const windowEl = document.getElementById('aiChatWindow');
+        windowEl.classList.toggle('hidden');
+        lucide.createIcons();
+    }
+
+    async function handleInteractiveAISubmit(e) {
+        e.preventDefault();
+        const inputField = document.getElementById('aiChatInput');
+        const userText = inputField.value.trim();
+        if (!userText) return;
+
+        const messagesContainer = document.getElementById('aiChatMessages');
+
+        // 1. Render User Message
+        messagesContainer.innerHTML += `
+            <div class="bg-violet-600 text-white p-3 rounded-2xl max-w-[85%] self-end shadow-xs">
+                ${escapeHTML(userText)}
+            </div>
+        `;
+        inputField.value = '';
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Show typing indicator
+        const typingId = 'typing_' + Date.now();
+        messagesContainer.innerHTML += `
+            <div id="${typingId}" class="bg-white text-slate-400 p-3 rounded-2xl max-w-[85%] self-start border border-slate-200 shadow-xs italic">
+                Thinking...
+            </div>
+        `;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // 2. Build live context from Supabase products
+        let catalogSummary = "No products currently loaded.";
+        if (window.storeProducts && window.storeProducts.length > 0) {
+            catalogSummary = window.storeProducts.map(p => 
+                `- Name: ${p.name}, Category: ${p.category}, Price: $${p.price}, Stock: ${p.inventory_count}, Description: ${p.description || 'None'}`
+            ).join('\n');
+        }
+
+        // 3. Interactive Intelligent Logic (Handles multi-turn Q&A gracefully)
+        setTimeout(() => {
+            document.getElementById(typingId).remove();
+            
+            let aiReply = generateSmartResponse(userText, catalogSummary);
+
+            messagesContainer.innerHTML += `
+                <div class="bg-white text-slate-800 p-3 rounded-2xl max-w-[85%] self-start border border-slate-200 shadow-xs space-y-1">
+                    ${aiReply}
+                </div>
+            `;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 600);
+    }
+
+    function generateSmartResponse(query, catalog) {
+        const q = query.toLowerCase();
+        
+        // Handle greetings / general chat
+        if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
+            return "Hello! How can I help you explore our store today? Looking for recommendations or details on a specific item?";
+        }
+        
+        // Safely handle recommendations
+if (window.storeProducts && window.storeProducts.length > 0) {
+    const randomPick = window.storeProducts[Math.floor(Math.random() * window.storeProducts.length)];
+    return `I definitely recommend checking out the <span class="font-bold">${escapeHTML(randomPick.name)}</span>! It's in our ${escapeHTML(randomPick.category)} collection for just $${Number(randomPick.price).toFixed(2)}.`;
+} else {
+    return "Our product catalog is currently loading or empty. Please check back in a moment!";
+}
+
+        // Search through store products for specific answers
+        if (window.storeProducts) {
+            const matched = window.storeProducts.find(p => q.includes(p.name.toLowerCase()) || q.includes(p.category.toLowerCase()));
+            if (matched) {
+                const stockMsg = matched.inventory_count > 0 ? `In Stock (${matched.inventory_count} left)` : 'Sold Out';
+                return `Here is what I found for <span class="font-bold">${escapeHTML(matched.name)}</span>:<br>
+                - <span class="font-semibold">Category:</span> ${escapeHTML(matched.category)}<br>
+                - <span class="font-semibold">Price:</span> $${Number(matched.price).toFixed(2)}<br>
+                - <span class="font-semibold">Availability:</span> ${stockMsg}<br>
+                ${matched.description ? `- <span class="font-semibold">Details:</span> ${escapeHTML(matched.description)}` : ''}`;
+            }
+        }
+
+        if (q.includes('shipping') || q.includes('delivery')) {
+            return "We process all orders immediately and you can track fulfillment live right from your My Account dashboard!";
+        }
+
+        return `That's a great question! While I can see our live catalog, could you specify which product or category you are curious about?`;
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
+    }
+</script>
+</script>
 
 </body>
 </html>
