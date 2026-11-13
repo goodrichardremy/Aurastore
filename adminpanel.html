@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aura Store - Admin Dashboard</title>
+    <!-- Supabase JS Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -13,27 +15,26 @@
 
     <!-- Admin Header -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 px-6 py-4 shadow-md">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-violet-600 text-white p-2 rounded-xl font-bold tracking-wider shadow-md">AURA</div>
                 <div>
                     <h1 class="text-lg font-extrabold tracking-tight">Admin Management Console</h1>
                     <p class="text-xs text-slate-400">Real-time store operations & fulfillment</p>
                 </div>
-                
             </div>
 
-            <div
-            
-                    <button onclick="adminLogout()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="adminLogout()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                     <i data-lucide="log-out" class="w-4 h-4"></i> Lock Panel
-                    </button>
+                </button>
+                <button id="changePasswordBtn" onclick="openChangePasswordModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                    <i data-lucide="key-round" class="w-4 h-4"></i> Change Password
+                </button>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                    <i data-lucide="external-link" class="w-4 h-4"></i> View Live Storefront
+                </a>
             </div>
-            <a
-             href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
-                
-                <i data-lucide="external-link" class="w-4 h-4"></i> View Live Storefront
-            </a>
         </div>
     </header>
 
@@ -66,7 +67,7 @@
         </div>
 
         <!-- ORDER MANAGEMENT SECTION -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+        <div id="orderManagementSection" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
             <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Customer Orders</h2>
@@ -102,7 +103,7 @@
         </div>
 
         <!-- PROMO CODE MANAGEMENT SECTION -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+        <div id="promoManagementSection" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
             <div class="flex justify-between items-center border-b pb-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Promo Code Management</h2>
@@ -130,7 +131,7 @@
         </div>
 
         <!-- PRODUCT INVENTORY MANAGEMENT SECTION -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+        <div id="productManagementSection" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
             <div class="flex justify-between items-center border-b pb-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Product Catalog Management</h2>
@@ -158,20 +159,50 @@
             </div>
         </div>
 
+        <!-- SUBADMIN MANAGEMENT SECTION -->
+        <div id="subadminManagementSection" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div class="flex justify-between items-center border-b pb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Subadmin Access Management</h2>
+                    <p class="text-xs text-slate-500">Create and manage additional operator accounts for your store.</p>
+                </div>
+                <button onclick="openAddSubadminModal()" class="bg-violet-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-violet-700 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Add Subadmin
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                            <th class="p-4">Username / ID</th>
+                            <th class="p-4">Role</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminSubadminTable" class="divide-y divide-slate-100 text-sm">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
+
+    <!-- MODALS -->
 
     <!-- ADD PROMO MODAL -->
     <div id="addPromoModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
             <h3 class="text-lg font-bold text-slate-900">Create Discount Coupon</h3>
-            <form onsubmit="handleSaveNewPromo(event)" class="space-y-3">
+            <form onsubmit="handleAddCoupon(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Coupon Code</label>
-                    <input type="text" id="newPromoCode" placeholder="e.g. SUMMER25" required class="w-full p-2.5 border rounded-xl text-sm uppercase outline-none">
+                    <input type="text" id="promoCodeInput" placeholder="e.g. SUMMER25" required class="w-full p-2.5 border rounded-xl text-sm uppercase outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Discount Percentage (%)</label>
-                    <input type="number" min="1" max="100" id="newPromoDiscount" placeholder="e.g. 15" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                    <input type="number" min="1" max="100" id="promoDiscountInput" placeholder="e.g. 15" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
                 </div>
                 <div class="flex justify-end gap-2 pt-3">
                     <button type="button" onclick="closeAddPromoModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
@@ -182,40 +213,18 @@
     </div>
 
     <!-- ADD PRODUCT MODAL -->
-    <!-- EDIT PRODUCT MODAL -->
-<div id="editProductModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
-        <h3 class="text-lg font-bold text-slate-900">Edit Product</h3>
-        <form onsubmit="handleSaveEditedProduct(event)" class="space-y-3">
-            <input type="hidden" id="editProdId">
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product Name</label>
-                <input type="text" id="editProdName" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Price ($)</label>
-                <input type="number" step="0.01" id="editProdPrice" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div class="flex justify-end gap-2 pt-3">
-                <button type="button" onclick="closeEditProductModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold cursor-pointer">Save Changes</button>
-            </div>
-        </form>
-    </div>
-</div>
-
     <div id="addProductModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
             <h3 class="text-lg font-bold text-slate-900">Add New Store Product</h3>
-            <form onsubmit="handleSaveNewProduct(event)" class="space-y-3">
+            <form onsubmit="handleAddProduct(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product Name</label>
-                    <input type="text" id="newProdName" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                    <input type="text" id="productName" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Category</label>
-                        <select id="newProdCat" class="w-full p-2.5 border rounded-xl text-sm outline-none bg-white">
+                        <select id="productCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none bg-white">
                             <option value="Audio">Audio</option>
                             <option value="Wearables">Wearables</option>
                             <option value="Accessories">Accessories</option>
@@ -223,12 +232,12 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Price ($)</label>
-                        <input type="number" step="0.01" id="newProdPrice" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                        <input type="number" step="0.01" id="productPrice" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Image URL</label>
-                    <input type="url" id="newProdImage" placeholder="https://images.unsplash.com/..." required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                    <input type="url" id="productImage" placeholder="https://images.unsplash.com/..." required class="w-full p-2.5 border rounded-xl text-sm outline-none">
                 </div>
                 <div class="flex justify-end gap-2 pt-3">
                     <button type="button" onclick="closeAddProductModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
@@ -238,22 +247,260 @@
         </div>
     </div>
 
+    <!-- EDIT PRODUCT MODAL -->
+    <div id="editProductModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <h3 class="text-lg font-bold text-slate-900">Edit Product</h3>
+            <form onsubmit="handleSaveEditedProduct(event)" class="space-y-3">
+                <input type="hidden" id="editProdId">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product Name</label>
+                    <input type="text" id="editProdName" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Price ($)</label>
+                    <input type="number" step="0.01" id="editProdPrice" required class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeEditProductModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold cursor-pointer">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CHANGE ADMIN PASSWORD MODAL -->
+    <div id="changePasswordModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900">Update Admin Password</h3>
+                <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleChangeAdminPassword(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Current Password</label>
+                    <input type="password" id="currentAdminPass" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">New Password</label>
+                    <input type="password" id="newAdminPass" minlength="6" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Confirm New Password</label>
+                    <input type="password" id="confirmAdminPass" minlength="6" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold cursor-pointer">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD SUBADMIN MODAL -->
+    <div id="addSubadminModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900">Create Subadmin Account</h3>
+                <button onclick="closeAddSubadminModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleSaveNewSubadmin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Username</label>
+                    <input type="text" id="subadminUser" placeholder="e.g. manager_sarah" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Password</label>
+                    <input type="password" id="subadminPass" placeholder="••••••••" minlength="6" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+
+                <div class="space-y-2 pt-2 border-t">
+                    <label class="block text-xs font-bold uppercase text-slate-500">Grant Access To:</label>
+                    <div class="space-y-2 text-xs font-medium text-slate-700">
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="permProducts" checked class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500"> Product Management
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="permOrders" checked class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500"> Customer Orders
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="permPromos" checked class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500"> Promo Code Management
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeAddSubadminModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold cursor-pointer">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT SUBADMIN MODAL -->
+    <div id="editSubadminModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900">Edit Subadmin Account</h3>
+                <button onclick="closeEditSubadminModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleSaveEditedSubadmin(event)" class="space-y-4">
+                <input type="hidden" id="editSubadminIndex">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Username</label>
+                    <input type="text" id="editSubadminUser" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Password</label>
+                    <input type="text" id="editSubadminPass" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+
+                <div class="space-y-2 pt-2 border-t">
+                    <label class="block text-xs font-bold uppercase text-slate-500">Grant Access To:</label>
+                    <div class="space-y-2 text-xs font-medium text-slate-700">
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="editPermProducts" class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500"> Product Management
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="editPermOrders" class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500"> Customer Orders
+                        </label>
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" id="editPermPromos" class="w-4 h-4 rounded text-violet-600 focus:ring-violet-500"> Promo Code Management
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeEditSubadminModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold cursor-pointer">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN OVERLAY -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 space-y-6 shadow-2xl border border-slate-100 text-center">
+            <div class="w-12 h-12 bg-violet-100 text-violet-600 rounded-2xl mx-auto flex items-center justify-center font-bold shadow-inner">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-xl font-extrabold text-slate-900">Admin Authentication</h2>
+                <p class="text-xs text-slate-500">Enter your secure passcode to access store operations.</p>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <input type="password" id="adminPassInput" placeholder="Enter admin password" required class="w-full p-3 border rounded-xl text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-violet-500">
+                <button type="submit" class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold hover:bg-violet-700 transition shadow-md cursor-pointer">Authenticate</button>
+            </form>
+            <a href="index.html" class="block text-xs font-semibold text-slate-400 hover:text-slate-600 transition">Return to Storefront</a>
+        </div>
+    </div>
+
     <!-- ADMIN SCRIPT -->
     <script>
         lucide.createIcons();
 
-        let adminOrders = JSON.parse(localStorage.getItem('aura_admin_orders')) || [];
-        let adminProducts = JSON.parse(localStorage.getItem('aura_products')) || [
-            { id: 1, name: "Aura Studio Wireless Headphones", category: "Audio", price: 299.99, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600" },
-            { id: 2, name: "Aura Horizon Smart Watch", category: "Wearables", price: 199.99, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600" },
-            { id: 3, name: "Aura Minimalist Mechanical Keyboard", category: "Accessories", price: 149.50, image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600" }
-        ];
+        // Initialize Supabase Client
+        const SUPABASE_URL = "https://cowiqzbbgsjkwxnwfrro.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvd2lxemJiZ3Nqa3d4bndmcnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MzY1MDEsImV4cCI6MjExMDExMjUwMX0.lC0qPq1UXTLA2u1btzYGaRuPeUVWfgWRe3gsrDPAdpA";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Supabase connected successfully!");
 
-        let adminCoupons = JSON.parse(localStorage.getItem('aura_coupons')) || {
-            "AURA10": 10,
-            "WELCOME20": 20,
-            "FLASH50": 50
-        };
+        let adminProducts = [];
+        let adminOrders = [];
+        let adminSubadmins = JSON.parse(localStorage.getItem('aura_subadmins')) || [];
+        const DEFAULT_ADMIN_PASSWORD = "aura_secure_2026";
+
+        function getAdminPassword() {
+            return localStorage.getItem('aura_admin_password') || DEFAULT_ADMIN_PASSWORD;
+        }
+
+        function checkAdminAuth() {
+            const isAuthenticated = sessionStorage.getItem('aura_admin_authenticated');
+            const loginModal = document.getElementById('adminLoginModal');
+            
+            if (isAuthenticated === 'true') {
+                loginModal.classList.add('hidden');
+                applyRolePermissions();
+            } else {
+                loginModal.classList.remove('hidden');
+            }
+        }
+
+        // Load Products from Supabase
+        async function loadProducts() {
+            try {
+                const { data: products, error } = await supabaseClient
+                    .from('products')
+                    .select('*')
+                    .order('id', { ascending: true });
+
+                if (error) throw error;
+                adminProducts = products || [];
+                renderAdminProducts();
+            } catch (error) {
+                console.error('Error loading products:', error.message);
+            }
+        }
+
+        // Load Customer Orders from Supabase
+        async function loadCustomerOrders() {
+            try {
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+                adminOrders = orders || [];
+                renderAdminOrders();
+            } catch (error) {
+                console.error('Error loading orders:', error.message);
+            }
+        }
+
+        // Load Promo Codes from Supabase
+        async function loadPromoCodes() {
+            try {
+                const { data: coupons, error } = await supabaseClient
+                    .from('coupons')
+                    .select('*');
+
+                if (error) throw error;
+                renderAdminCoupons(coupons || []);
+            } catch (error) {
+                console.error('Error loading promo codes:', error.message);
+            }
+        }
+
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const image = document.getElementById('productImage').value.trim();
+
+            try {
+                const { error } = await supabaseClient
+                    .from('products')
+                    .insert([{ name, category, price, image }]);
+
+                if (error) throw error;
+                alert('Product added successfully!');
+                e.target.reset();
+                closeAddProductModal();
+                loadProducts();
+            } catch (error) {
+                console.error('Error adding product:', error.message);
+                alert('Failed to save product: ' + error.message);
+            }
+        }
 
         function updateAnalyticsMetrics() {
             const totalRevenue = adminOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
@@ -282,24 +529,19 @@
             }
 
             tableBody.innerHTML = filteredOrders.map((o) => {
-                const globalIndex = adminOrders.findIndex(item => item.id === o.id);
                 return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-4 font-bold text-violet-600">${o.id}</td>
-                        <td class="p-4 font-medium text-slate-900">${o.customerName || 'Customer'}</td>
-                        <td class="p-4 text-slate-600">${o.date}</td>
-                        <td class="p-4 text-slate-600 text-xs">${(o.items || []).map(i => `${i.name} (x1)`).join(', ')}</td>
+                        <td class="p-4 font-medium text-slate-900">${o.customer_name || 'Customer'}</td>
+                        <td class="p-4 text-slate-600">${new Date(o.date).toLocaleDateString()}</td>
+                        <td class="p-4 text-slate-600 text-xs">${Array.isArray(o.items) ? o.items.map(i => `${i.name}`).join(', ') : 'Items'}</td>
                         <td class="p-4 font-extrabold text-slate-900">$${Number(o.total).toFixed(2)}</td>
                         <td class="p-4">
-                            <select onchange="updateOrderStatus(${globalIndex}, this.value)" class="text-xs font-bold px-3 py-1.5 rounded-full border outline-none cursor-pointer ${
+                            <span class="text-xs font-bold px-3 py-1.5 rounded-full border ${
                                 o.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 
                                 o.status === 'Shipped' ? 'bg-blue-50 text-blue-600 border-blue-200' : 
                                 'bg-amber-50 text-amber-600 border-amber-200'
-                            }">
-                                <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                            </select>
+                            }">${o.status || 'Processing'}</span>
                         </td>
                     </tr>
                 `;
@@ -309,212 +551,310 @@
             lucide.createIcons();
         }
 
-        function updateOrderStatus(index, newStatus) {
-            adminOrders[index].status = newStatus;
-            localStorage.setItem('aura_admin_orders', JSON.stringify(adminOrders));
+        async function handleAddCoupon(e) {
+            e.preventDefault();
+            const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+            const discount = parseFloat(document.getElementById('promoDiscountInput').value);
 
-            let userOrders = JSON.parse(localStorage.getItem('aura_orders')) || [];
-            const targetId = adminOrders[index].id;
-            userOrders = userOrders.map(uo => {
-                if (uo.id === targetId) uo.status = newStatus;
-                return uo;
-            });
-            localStorage.setItem('aura_orders', JSON.stringify(userOrders));
-            renderAdminOrders();
+            try {
+                const { error } = await supabaseClient
+                    .from('coupons')
+                    .insert([{ code, discount }]);
+
+                if (error) throw error;
+                alert('Promo code created successfully!');
+                e.target.reset();
+                closeAddPromoModal();
+                loadPromoCodes();
+            } catch (error) {
+                console.error('Error adding coupon:', error.message);
+                alert('Failed to save promo code: ' + error.message);
+            }
         }
 
-        function renderAdminCoupons() {
+        function renderAdminCoupons(coupons) {
             const tableBody = document.getElementById('adminPromoTable');
             if (!tableBody) return;
 
-            const couponKeys = Object.keys(adminCoupons);
-            if (couponKeys.length === 0) {
+            if (coupons.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400">No active promo codes.</td></tr>`;
                 return;
             }
 
-            tableBody.innerHTML = couponKeys.map(code => `
+            tableBody.innerHTML = coupons.map(c => `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-4 font-mono font-bold text-violet-600 tracking-wider">${code}</td>
-                    <td class="p-4"><span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full text-xs font-extrabold">${adminCoupons[code]}% OFF</span></td>
+                    <td class="p-4 font-mono font-bold text-violet-600 tracking-wider">${c.code}</td>
+                    <td class="p-4"><span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full text-xs font-extrabold">${c.discount}% OFF</span></td>
                     <td class="p-4 text-right">
-                        <button onclick="deleteCoupon('${code}')" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="deleteCoupon(${c.id})" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
             lucide.createIcons();
         }
 
-        function openAddPromoModal() { document.getElementById('addPromoModal').classList.remove('hidden'); }
-        function closeAddPromoModal() { document.getElementById('addPromoModal').classList.add('hidden'); }
-
-        function handleSaveNewPromo(e) {
-            e.preventDefault();
-            const code = document.getElementById('newPromoCode').value.trim().toUpperCase();
-            const discount = parseInt(document.getElementById('newPromoDiscount').value);
-
-            adminCoupons[code] = discount;
-            localStorage.setItem('aura_coupons', JSON.stringify(adminCoupons));
-            renderAdminCoupons();
-            closeAddPromoModal();
-            e.target.reset();
+        async function deleteCoupon(id) {
+            try {
+                await supabaseClient.from('coupons').delete().eq('id', id);
+                loadPromoCodes();
+            } catch (error) {
+                console.error('Error deleting coupon:', error);
+            }
         }
 
-        function deleteCoupon(code) {
-            delete adminCoupons[code];
-            localStorage.setItem('aura_coupons', JSON.stringify(adminCoupons));
-            renderAdminCoupons();
+        function renderAdminProducts() {
+            const tableBody = document.getElementById('adminProductTable');
+            if (!tableBody) return;
+
+            if (adminProducts.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">No products in inventory.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = adminProducts.map(p => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 flex items-center gap-3">
+                        <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover border" alt="${p.name}">
+                        <span class="font-bold text-slate-800">${p.name}</span>
+                    </td>
+                    <td class="p-4"><span class="bg-slate-100 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600">${p.category}</span></td>
+                    <td class="p-4 font-bold text-slate-900">$${Number(p.price).toFixed(2)}</td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="openEditProductModal(${p.id})" class="text-slate-400 hover:text-violet-600 transition p-1 cursor-pointer" title="Edit Product"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                        <button onclick="deleteProduct(${p.id})" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer" title="Delete Product"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
         }
-
-       function renderAdminProducts() {
-    const tableBody = document.getElementById('adminProductTable');
-    if (!tableBody) return;
-
-    if (adminProducts.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">No products in inventory.</td></tr>`;
-        return;
-    }
-
-    tableBody.innerHTML = adminProducts.map(p => `
-        <tr class="hover:bg-slate-50 transition">
-            <td class="p-4 flex items-center gap-3">
-                <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover border" alt="${p.name}">
-                <span class="font-bold text-slate-800">${p.name}</span>
-            </td>
-            <td class="p-4"><span class="bg-slate-100 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600">${p.category}</span></td>
-            <td class="p-4 font-bold text-slate-900">$${Number(p.price).toFixed(2)}</td>
-            <td class="p-4 text-right space-x-2">
-                <button onclick="openEditProductModal(${p.id})" class="text-slate-400 hover:text-violet-600 transition p-1 cursor-pointer" title="Edit Product"><i data-lucide="pencil" class="w-4 h-4"></i></button>
-                <button onclick="deleteProduct(${p.id})" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer" title="Delete Product"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            </td>
-        </tr>
-    `).join('');
-    lucide.createIcons();
-}
 
         function openAddProductModal() { document.getElementById('addProductModal').classList.remove('hidden'); }
         function closeAddProductModal() { document.getElementById('addProductModal').classList.add('hidden'); }
 
         function openEditProductModal(id) {
-    const product = adminProducts.find(p => p.id === id);
-    if (!product) return;
+            const product = adminProducts.find(p => p.id === id);
+            if (!product) return;
 
-    document.getElementById('editProdId').value = product.id;
-    document.getElementById('editProdName').value = product.name;
-    document.getElementById('editProdPrice').value = product.price;
+            document.getElementById('editProdId').value = product.id;
+            document.getElementById('editProdName').value = product.name;
+            document.getElementById('editProdPrice').value = product.price;
 
-    document.getElementById('editProductModal').classList.remove('hidden');
-}
-
-function closeEditProductModal() {
-    document.getElementById('editProductModal').classList.add('hidden');
-}
-
-function handleSaveEditedProduct(e) {
-    e.preventDefault();
-    const id = Number(document.getElementById('editProdId').value);
-    const newName = document.getElementById('editProdName').value;
-    const newPrice = parseFloat(document.getElementById('editProdPrice').value);
-
-    // Find and update product in adminProducts array
-    adminProducts = adminProducts.map(p => {
-        if (p.id === id) {
-            return { ...p, name: newName, price: newPrice };
+            document.getElementById('editProductModal').classList.remove('hidden');
         }
-        return p;
-    });
 
-    // Save back to localStorage for live store sync
-    localStorage.setItem('aura_products', JSON.stringify(adminProducts));
-    
-    renderAdminProducts();
-    closeEditProductModal();
-}
+        function closeEditProductModal() {
+            document.getElementById('editProductModal').classList.add('hidden');
+        }
 
-        function handleSaveNewProduct(e) {
+        async function handleSaveEditedProduct(e) {
             e.preventDefault();
-            const newProd = {
-                id: Date.now(),
-                name: document.getElementById('newProdName').value,
-                category: document.getElementById('newProdCat').value,
-                price: parseFloat(document.getElementById('newProdPrice').value),
-                image: document.getElementById('newProdImage').value
+            const id = Number(document.getElementById('editProdId').value);
+            const name = document.getElementById('editProdName').value;
+            const price = parseFloat(document.getElementById('editProdPrice').value);
+
+            try {
+                const { error } = await supabaseClient
+                    .from('products')
+                    .update({ name, price })
+                    .eq('id', id);
+
+                if (error) throw error;
+                closeEditProductModal();
+                loadProducts();
+            } catch (error) {
+                console.error('Error updating product:', error);
+            }
+        }
+
+        async function deleteProduct(id) {
+            try {
+                await supabaseClient.from('products').delete().eq('id', id);
+                loadProducts();
+            } catch (error) {
+                console.error('Error deleting product:', error);
+            }
+        }
+
+        function renderAdminSubadmins() {
+            const tableBody = document.getElementById('adminSubadminTable');
+            if (!tableBody) return;
+
+            if (adminSubadmins.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400">No subadmin accounts created.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = adminSubadmins.map((sub, index) => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-violet-600"></i> ${sub.username}
+                    </td>
+                    <td class="p-4"><span class="bg-violet-50 text-violet-600 border border-violet-200 px-2.5 py-1 rounded-full text-xs font-semibold">Subadmin</span></td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="openEditSubadminModal(${index})" class="text-slate-400 hover:text-violet-600 transition p-1 cursor-pointer" title="Edit Subadmin"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                        <button onclick="deleteSubadmin(${index})" class="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer" title="Revoke Access"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openAddSubadminModal() { document.getElementById('addSubadminModal').classList.remove('hidden'); }
+        function closeAddSubadminModal() { document.getElementById('addSubadminModal').classList.add('hidden'); }
+
+        function handleSaveNewSubadmin(e) {
+            e.preventDefault();
+            const username = document.getElementById('subadminUser').value.trim();
+            const password = document.getElementById('subadminPass').value;
+            
+            const permissions = {
+                products: document.getElementById('permProducts').checked,
+                orders: document.getElementById('permOrders').checked,
+                promos: document.getElementById('permPromos').checked
             };
 
-            adminProducts.push(newProd);
-            localStorage.setItem('aura_products', JSON.stringify(adminProducts));
-            renderAdminProducts();
-            closeAddProductModal();
+            adminSubadmins.push({ username, password, permissions });
+            localStorage.setItem('aura_subadmins', JSON.stringify(adminSubadmins));
+
+            renderAdminSubadmins();
+            closeAddSubadminModal();
             e.target.reset();
         }
 
-        function deleteProduct(id) {
-            adminProducts = adminProducts.filter(p => p.id !== id);
-            localStorage.setItem('aura_products', JSON.stringify(adminProducts));
-            renderAdminProducts();
+        function deleteSubadmin(index) {
+            adminSubadmins.splice(index, 1);
+            localStorage.setItem('aura_subadmins', JSON.stringify(adminSubadmins));
+            renderAdminSubadmins();
         }
 
-        // Initialize Dashboard
-        renderAdminOrders();
-        renderAdminCoupons();
-        renderAdminProducts();
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById('adminPassInput').value;
+            const isMaster = (inputPass === getAdminPassword());
+            const matchedSubadmin = adminSubadmins.find(sub => sub.password === inputPass);
 
-        // Default Admin Password (Change 'aura_secure_2026' to whatever password you prefer)
-const ADMIN_PASSWORD = "aura_secure_2026";
+            if (isMaster || matchedSubadmin) {
+                sessionStorage.setItem('aura_admin_authenticated', 'true');
+                sessionStorage.setItem('aura_admin_role', isMaster ? 'master' : 'subadmin');
+                if (!isMaster) {
+                    sessionStorage.setItem('aura_subadmin_perms', JSON.stringify(matchedSubadmin.permissions || {}));
+                }
+                document.getElementById('adminLoginModal').classList.add('hidden');
+                document.getElementById('adminPassInput').value = '';
+                applyRolePermissions();
+            } else {
+                alert('Incorrect password. Access denied.');
+                document.getElementById('adminPassInput').value = '';
+            }
+            supabaseClient.auth.signInWithEmailAndPassword('goodrichardremy@gmail.com', 'Remy@aura');
+        }
 
-// Check authentication status on page load
-function checkAdminAuth() {
-    const isAuthenticated = sessionStorage.getItem('aura_admin_authenticated');
-    const loginModal = document.getElementById('adminLoginModal');
-    
-    if (isAuthenticated === 'true') {
-        loginModal.classList.add('hidden');
-    } else {
-        loginModal.classList.remove('hidden');
-    }
-}
+        function adminLogout() {
+            sessionStorage.removeItem('aura_admin_authenticated');
+            location.reload();
+        }
 
-function handleAdminLogin(e) {
-    e.preventDefault();
-    const inputVal = document.getElementById('adminPassInput').value;
-    
-    if (inputVal === ADMIN_PASSWORD) {
-        sessionStorage.setItem('aura_admin_authenticated', 'true');
-        document.getElementById('adminLoginModal').classList.add('hidden');
-        document.getElementById('adminPassInput').value = '';
-    } else {
-        alert('Incorrect admin password. Access denied.');
-        document.getElementById('adminPassInput').value = '';
-    }
-}
+        function openChangePasswordModal() { document.getElementById('changePasswordModal').classList.remove('hidden'); }
+        function closeChangePasswordModal() { document.getElementById('changePasswordModal').classList.add('hidden'); }
 
-function adminLogout() {
-    sessionStorage.removeItem('aura_admin_authenticated');
-    location.reload(); // Reloads page and brings back the login lock
-}
+        function handleChangeAdminPassword(e) {
+            e.preventDefault();
+            const currentPass = document.getElementById('currentAdminPass').value;
+            const newPass = document.getElementById('newAdminPass').value;
+            const confirmPass = document.getElementById('confirmAdminPass').value;
 
-// Run auth check immediately
-checkAdminAuth();
+            if (currentPass !== getAdminPassword()) {
+                alert('Current password is incorrect.');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                alert('New passwords do not match.');
+                return;
+            }
 
+            localStorage.setItem('aura_admin_password', newPass);
+            alert('Admin password updated successfully!');
+            e.target.reset();
+            closeChangePasswordModal();
+        }
+
+        function applyRolePermissions() {
+            const role = sessionStorage.getItem('aura_admin_role');
+            const prodSec = document.getElementById('productManagementSection');
+            const orderSec = document.getElementById('orderManagementSection');
+            const promoSec = document.getElementById('promoManagementSection');
+            const subadminSec = document.getElementById('subadminManagementSection');
+            const changePassBtn = document.getElementById('changePasswordBtn');
+
+            if (role === 'subadmin') {
+                const perms = JSON.parse(sessionStorage.getItem('aura_subadmin_perms') || '{}');
+                if (prodSec) prodSec.style.display = perms.products ? 'block' : 'none';
+                if (orderSec) orderSec.style.display = perms.orders ? 'block' : 'none';
+                if (promoSec) promoSec.style.display = perms.promos ? 'block' : 'none';
+                if (subadminSec) subadminSec.style.display = 'none';
+                if (changePassBtn) changePassBtn.style.display = 'none';
+            } else {
+                if (prodSec) prodSec.style.display = 'block';
+                if (orderSec) orderSec.style.display = 'block';
+                if (promoSec) promoSec.style.display = 'block';
+                if (subadminSec) subadminSec.style.display = 'block';
+                if (changePassBtn) changePassBtn.style.display = 'inline-flex';
+            }
+        }
+
+        function openEditSubadminModal(index) {
+            const sub = adminSubadmins[index];
+            if (!sub) return;
+
+            document.getElementById('editSubadminIndex').value = index;
+            document.getElementById('editSubadminUser').value = sub.username;
+            document.getElementById('editSubadminPass').value = sub.password;
+
+            const perms = sub.permissions || { products: true, orders: true, promos: true };
+            document.getElementById('editPermProducts').checked = perms.products;
+            document.getElementById('editPermOrders').checked = perms.orders;
+            document.getElementById('editPermPromos').checked = perms.promos;
+
+            document.getElementById('editSubadminModal').classList.remove('hidden');
+        }
+
+        function closeEditSubadminModal() { document.getElementById('editSubadminModal').classList.add('hidden'); }
+
+        function handleSaveEditedSubadmin(e) {
+            e.preventDefault();
+            const index = Number(document.getElementById('editSubadminIndex').value);
+            const username = document.getElementById('editSubadminUser').value.trim();
+            const password = document.getElementById('editSubadminPass').value;
+
+            const permissions = {
+                products: document.getElementById('editPermProducts').checked,
+                orders: document.getElementById('editPermOrders').checked,
+                promos: document.getElementById('editPermPromos').checked
+            };
+
+            adminSubadmins[index] = { username, password, permissions };
+            localStorage.setItem('aura_subadmins', JSON.stringify(adminSubadmins));
+            renderAdminSubadmins();
+            closeEditSubadminModal();
+        }
+
+        function openAddPromoModal() { document.getElementById('addPromoModal').classList.remove('hidden'); }
+        function closeAddPromoModal() { document.getElementById('addPromoModal').classList.add('hidden'); }
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth();
+            loadProducts();
+            loadCustomerOrders();
+            loadPromoCodes();
+            renderAdminSubadmins();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+    loadStorefrontProducts(); // or loadProducts()
+});
     </script>
 
-<!-- ADMIN LOGIN OVERLAY -->
-<div id="adminLoginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-8 space-y-6 shadow-2xl border border-slate-100 text-center">
-        <div class="w-12 h-12 bg-violet-100 text-violet-600 rounded-2xl mx-auto flex items-center justify-center font-bold shadow-inner">
-            <i data-lucide="lock" class="w-6 h-6"></i>
-        </div>
-        <div class="space-y-1">
-            <h2 class="text-xl font-extrabold text-slate-900">Admin Authentication</h2>
-            <p class="text-xs text-slate-500">Enter your secure passcode to access store operations.</p>
-        </div>
-        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
-            <input type="password" id="adminPassInput" placeholder="Enter admin password" required class="w-full p-3 border rounded-xl text-sm text-center tracking-widest outline-none focus:ring-2 focus:ring-violet-500">
-            <button type="submit" class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold hover:bg-violet-700 transition shadow-md cursor-pointer">Authenticate</button>
-        </form>
-        <a href="index.html" class="block text-xs font-semibold text-slate-400 hover:text-slate-600 transition">Return to Storefront</a>
-    </div>
-</div>
-
+    
 </body>
 </html>
