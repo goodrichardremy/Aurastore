@@ -529,11 +529,27 @@
                                 </div>
                                 <p class="text-sm font-extrabold text-slate-900 mt-1">$${Number(p.price).toFixed(2)}</p>
                             </div>
-                            <button onclick="${isOutOStock ? '' : `addToCart(${p.id})`}" type="button" ${isOutOStock ? 'disabled' : ''} class="w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm ${
-                                isOutOStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-violet-600 cursor-pointer'
-                            }">
-                                <i data-lucide="${isOutOStock ? 'ban' : 'shopping-cart'}" class="w-4 h-4"></i> ${isOutOStock ? 'Sold Out' : 'Add To Cart'}
-                            </button>
+
+                            <!-- Quantity Stepper & Add to Cart on Main Card -->
+                            ${!isOutOStock ? `
+                                <div class="space-y-2 pt-2 border-t">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-bold uppercase text-slate-400">Qty</span>
+                                        <div class="flex items-center border rounded-lg overflow-hidden bg-slate-50">
+                                            <button type="button" onclick="changeCardQty(${p.id}, -1, ${p.inventory_count})" class="px-2 py-1 text-slate-600 hover:bg-slate-200 text-xs font-bold transition cursor-pointer">-</button>
+                                            <input type="number" id="cardQty_${p.id}" value="1" min="1" max="${p.inventory_count}" readonly class="w-8 text-center text-xs font-bold bg-transparent outline-none">
+                                            <button type="button" onclick="changeCardQty(${p.id}, 1, ${p.inventory_count})" class="px-2 py-1 text-slate-600 hover:bg-slate-200 text-xs font-bold transition cursor-pointer">+</button>
+                                        </div>
+                                    </div>
+                                    <button onclick="addCardItemToCart(${p.id})" type="button" class="w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm bg-slate-900 text-white hover:bg-violet-600 cursor-pointer">
+                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Add To Cart
+                                    </button>
+                                </div>
+                            ` : `
+                                <button type="button" disabled class="w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm bg-slate-200 text-slate-400 cursor-not-allowed">
+                                    <i data-lucide="ban" class="w-4 h-4"></i> Sold Out
+                                </button>
+                            `}
                         </div>
                     </div>
                 `;
@@ -616,6 +632,40 @@
             updateCartUI();
             toggleCartDrawer();
         }
+
+        // Adjust quantity value inside the specific product card
+function changeCardQty(productId, change, maxStock) {
+    const input = document.getElementById(`cardQty_${productId}`);
+    if (!input) return;
+    let currentVal = parseInt(input.value) || 1;
+    let newVal = currentVal + change;
+    if (newVal < 1) newVal = 1;
+    if (newVal > maxStock) newVal = maxStock;
+    input.value = newVal;
+}
+
+// Add the selected quantity from the card directly into the cart
+function addCardItemToCart(productId) {
+    const input = document.getElementById(`cardQty_${productId}`);
+    const quantity = input ? parseInt(input.value) || 1 : 1;
+    
+    // Uses your existing bulk cart addition function
+    if (typeof addToCartWithQuantity === 'function') {
+        addToCartWithQuantity(productId, quantity);
+    } else {
+        const product = storeProducts.find(p => p.id === productId);
+        if (!product) return;
+        for (let i = 0; i < quantity; i++) {
+            cart.push(product);
+        }
+        localStorage.setItem('aura_cart', JSON.stringify(cart));
+        updateCartUI();
+        toggleCartDrawer();
+    }
+    
+    // Reset card input back to 1 after adding
+    if (input) input.value = 1;
+}
 
         function removeFromCart(index) {
             cart.splice(index, 1);
