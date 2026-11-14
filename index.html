@@ -152,7 +152,7 @@
                         <div class="flex justify-between items-center border-b pb-3">
                             <div>
                                 <h3 class="text-lg font-bold">Order History & Live Status</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Real-time order statuses synced directly from Supabase.</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Real-time order statuses synced directly from Supabase[cite: 3].</p>
                             </div>
                             <button onclick="renderOrders()" class="text-xs font-bold text-violet-600 hover:bg-violet-50 px-3 py-1.5 rounded-xl border border-violet-200 transition flex items-center gap-1 cursor-pointer">
                                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
@@ -221,12 +221,7 @@
     </div>
 
     <!-- PRODUCT DETAIL & REVIEWS MODAL -->
-    <div id="productModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button onclick="closeProductModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <div id="modalProductContent" class="space-y-6"></div>
-        </div>
-    </div>
+    <div id="productModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4"></div>
 
     <!-- ADDRESS MODAL -->
     <div id="addressModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
@@ -293,6 +288,41 @@
         </div>
     </div>
 
+    <!-- REVIEW SUBMISSION MODAL -->
+    <div id="reviewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-slate-900">Write a Product Review</h3>
+                <button onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleReviewSubmit(event)" class="space-y-3">
+                <input type="hidden" id="reviewProductId">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Your Name</label>
+                    <input type="text" id="reviewerName" placeholder="e.g. Alex Smith" required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Rating (1 to 5 Stars)</label>
+                    <select id="reviewRating" class="w-full p-2.5 border rounded-xl text-sm outline-none bg-white focus:ring-2 focus:ring-violet-500">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 - Amazing)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 - Great)</option>
+                        <option value="3">⭐⭐⭐ (3 - Average)</option>
+                        <option value="2">⭐⭐ (2 - Poor)</option>
+                        <option value="1">⭐ (1 - Terrible)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Your Review</label>
+                    <textarea id="reviewComment" rows="3" placeholder="Tell us what you think about this product..." required class="w-full p-2.5 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="closeReviewModal()" class="px-4 py-2 border rounded-xl text-xs font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-violet-600 text-white rounded-xl text-xs font-bold hover:bg-violet-700 transition cursor-pointer">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- CART SLIDE DRAWER -->
     <div id="cartDrawer" class="fixed inset-0 z-50 hidden">
         <div onclick="toggleCartDrawer()" class="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
@@ -325,6 +355,46 @@
         </div>
     </div>
 
+    <!-- AI SHOPPING ASSISTANT FLOATING WIDGET -->
+    <div id="aiChatWidget" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div class="flex flex-col items-center mb-1">
+            <button onclick="toggleAIChat()" id="aiChatToggleBtn" class="bg-violet-600 hover:bg-violet-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition cursor-pointer">
+                <i data-lucide="bot" class="w-7 h-7"></i>
+            </button>
+            <span class="text-[10px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded-full shadow-xs tracking-wider mt-1 border border-slate-200">Oliver</span>
+        </div>
+
+        <div id="aiChatWindow" class="hidden w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden transition-all mt-2">
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center font-bold text-xs">AI</div>
+                    <div>
+                        <h3 class="text-sm font-bold">Aura Shopping Assistant</h3>
+                        <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online & Interactive
+                        </p>
+                    </div>
+                </div>
+                <button onclick="toggleAIChat()" class="text-slate-400 hover:text-white cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="aiChatMessages" class="p-4 h-80 overflow-y-auto space-y-3 text-xs bg-slate-50 flex flex-col">
+                <div class="bg-violet-50 text-slate-800 p-3 rounded-2xl max-w-[85%] self-start border border-violet-100">
+                    Hi there! 👋 I'm Oliver, your interactive Aura Store shopping guide. Ask me anything about our products, recommendations, or stock!
+                </div>
+            </div>
+
+            <form onsubmit="handleInteractiveAISubmit(event)" class="p-3 bg-white border-t flex gap-2">
+                <input type="text" id="aiChatInput" placeholder="Ask me anything..." class="flex-1 p-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500">
+                <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- APPLICATION SCRIPT -->
     <script>
         lucide.createIcons();
@@ -346,7 +416,6 @@
         let appliedPromoName = "";
         let activeCategory = 'All';
         let isSignUpMode = false;
-        let selectedProductId = null;
 
         function updateHeaderNavState(activeView) {
             const storeTab = document.getElementById('navTab-store');
@@ -380,100 +449,97 @@
             }
         }
 
-        // Fetch and Render Products from Supabase Cloud Database
-       async function loadStorefrontProducts() {
-    const gridContainer = document.getElementById('productGrid');
-    if (!gridContainer) return;
+        // Fetch Products from Supabase Cloud Database & Setup Real-time Sync
+        async function loadStorefrontProducts() {
+            const gridContainer = document.getElementById('productGrid');
+            if (!gridContainer) return;
 
-    try {
-        // Ensure you select all columns or specifically include inventory_count
-        const { data: products, error } = await supabaseClient
-            .from('products')
-            .select('*') // or select('id, name, price, category, image, inventory_count')
-            .order('id', { ascending: true });
+            try {
+                const { data: products, error } = await supabaseClient
+                    .from('products')
+                    .select('*')
+                    .order('id', { ascending: true });
 
-        if (error) throw error;
+                if (error) throw error;
 
-        storeProducts = products || [];
-        renderProducts();
-    } catch (error) {
-        console.error('Error loading storefront products:', error.message);
-    }
-}
-
-// Listen to real-time changes on the products table
-function subscribeToInventoryChanges() {
-    supabaseClient
-        .channel('public:products')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
-            console.log('Inventory change detected, reloading products...', payload);
-            loadStorefrontProducts(); // Automatically refresh products grid on stock change
-        })
-        .subscribe();
-}
-
-      function renderProducts() {
-    const grid = document.getElementById('productGrid');
-    const searchInput = document.getElementById('searchInput');
-    const search = searchInput ? searchInput.value.toLowerCase() : "";
-
-    const filtered = storeProducts.filter(p => {
-        const matchesCat = activeCategory === 'All' || p.category === activeCategory;
-        const matchesSearch = p.name.toLowerCase().includes(search);
-        return matchesCat && matchesSearch;
-    });
-
-    if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-medium">No products matching your search.</div>`;
-        return;
-    }
-
-    grid.innerHTML = filtered.map(p => {
-        let reviews = productReviews[p.id] || [];
-        let avgRating = 5.0;
-        if (reviews.length > 0) {
-            const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-            avgRating = (sum / reviews.length).toFixed(1);
+                storeProducts = products || [];
+                renderProducts();
+            } catch (error) {
+                console.error('Error loading storefront products:', error.message);
+            }
         }
 
-        // Low stock or Out of stock badge logic
-        let stockBadge = '';
-        let isOutOStock = p.inventory_count === 0;
-        
-        if (isOutOStock) {
-            stockBadge = `<span class="absolute top-3 right-3 bg-slate-900/90 text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Out of Stock</span>`;
-        } else if (p.inventory_count <= 5) {
-            stockBadge = `<span class="absolute top-3 right-3 bg-rose-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider animate-pulse">Only ${p.inventory_count} left!</span>`;
+        function subscribeToInventoryChanges() {
+            supabaseClient
+                .channel('public:products')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
+                    console.log('Inventory change detected, reloading products...', payload);
+                    loadStorefrontProducts();
+                })
+                .subscribe();
         }
 
-        return `
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group">
-                <div onclick="openProductModal(${p.id})" class="h-48 overflow-hidden bg-slate-100 relative cursor-pointer">
-                    <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="${p.name}">
-                    <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-700">${p.category}</span>
-                    ${stockBadge}
-                </div>
-                <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                        <h4 onclick="openProductModal(${p.id})" class="font-bold text-slate-900 group-hover:text-violet-600 transition line-clamp-1 cursor-pointer">${p.name}</h4>
-                        <div class="flex items-center gap-1 text-amber-500 text-xs font-bold my-1">
-                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
-                            <span>${avgRating}</span>
-                            <span class="text-slate-400 font-normal">(${reviews.length} reviews)</span>
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const searchInput = document.getElementById('searchInput');
+            const search = searchInput ? searchInput.value.toLowerCase() : "";
+
+            const filtered = storeProducts.filter(p => {
+                const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+                const matchesSearch = p.name.toLowerCase().includes(search);
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-medium">No products matching your search.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => {
+                let reviews = productReviews[p.id] || [];
+                let avgRating = 5.0;
+                if (reviews.length > 0) {
+                    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+                    avgRating = (sum / reviews.length).toFixed(1);
+                }
+
+                let stockBadge = '';
+                let isOutOStock = p.inventory_count === 0;
+                
+                if (isOutOStock) {
+                    stockBadge = `<span class="absolute top-3 right-3 bg-slate-900/90 text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Out of Stock</span>`;
+                } else if (p.inventory_count <= 5) {
+                    stockBadge = `<span class="absolute top-3 right-3 bg-rose-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider animate-pulse">Only ${p.inventory_count} left!</span>`;
+                }
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col group">
+                        <div onclick="openProductModal(${p.id})" class="h-48 overflow-hidden bg-slate-100 relative cursor-pointer">
+                            <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="${p.name}">
+                            <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-700">${p.category}</span>
+                            ${stockBadge}
                         </div>
-                        <p class="text-sm font-extrabold text-slate-900 mt-1">$${Number(p.price).toFixed(2)}</p>
+                        <div class="p-5 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <h4 onclick="openProductModal(${p.id})" class="font-bold text-slate-900 group-hover:text-violet-600 transition line-clamp-1 cursor-pointer">${p.name}</h4>
+                                <div class="flex items-center gap-1 text-amber-500 text-xs font-bold my-1">
+                                    <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                    <span>${avgRating}</span>
+                                    <span class="text-slate-400 font-normal">(${reviews.length} reviews)</span>
+                                </div>
+                                <p class="text-sm font-extrabold text-slate-900 mt-1">$${Number(p.price).toFixed(2)}</p>
+                            </div>
+                            <button onclick="${isOutOStock ? '' : `addToCart(${p.id})`}" type="button" ${isOutOStock ? 'disabled' : ''} class="w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm ${
+                                isOutOStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-violet-600 cursor-pointer'
+                            }">
+                                <i data-lucide="${isOutOStock ? 'ban' : 'shopping-cart'}" class="w-4 h-4"></i> ${isOutOStock ? 'Sold Out' : 'Add To Cart'}
+                            </button>
+                        </div>
                     </div>
-                    <button onclick="${isOutOStock ? '' : `addToCart(${p.id})`}" type="button" ${isOutOStock ? 'disabled' : ''} class="w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm ${
-                        isOutOStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-violet-600 cursor-pointer'
-                    }">
-                        <i data-lucide="${isOutOStock ? 'ban' : 'shopping-cart'}" class="w-4 h-4"></i> ${isOutOStock ? 'Sold Out' : 'Add To Cart'}
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-    lucide.createIcons();
-}
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
 
         function setCategoryFilter(cat) {
             activeCategory = cat;
@@ -535,6 +601,17 @@ function subscribeToInventoryChanges() {
             const product = storeProducts.find(p => p.id === productId);
             if (!product) return;
             cart.push(product);
+            localStorage.setItem('aura_cart', JSON.stringify(cart));
+            updateCartUI();
+            toggleCartDrawer();
+        }
+
+        function addToCartWithQuantity(productId, quantity) {
+            const product = storeProducts.find(p => p.id === productId);
+            if (!product) return;
+            for (let i = 0; i < quantity; i++) {
+                cart.push(product);
+            }
             localStorage.setItem('aura_cart', JSON.stringify(cart));
             updateCartUI();
             toggleCartDrawer();
@@ -610,7 +687,6 @@ function subscribeToInventoryChanges() {
                     .select();
 
                 if (error) throw error;
-                console.log('Order saved to Supabase successfully:', data);
                 return true;
             } catch (error) {
                 console.error('Error saving order to Supabase:', error.message);
@@ -682,7 +758,6 @@ function subscribeToInventoryChanges() {
             let phone = "";
             let address = "";
 
-            // Attempt to fetch existing customer profile from Supabase on login
             try {
                 const { data } = await supabaseClient
                     .from('customer_profiles')
@@ -695,7 +770,6 @@ function subscribeToInventoryChanges() {
                     phone = data.phone || "";
                     address = data.address || "";
                 } else if (isSignUpMode) {
-                    // Create initial record in Supabase customer_profiles on sign up
                     await supabaseClient
                         .from('customer_profiles')
                         .upsert([{ email, full_name: name, phone: "", address: "", updated_at: new Date() }], { onConflict: 'email' });
@@ -748,7 +822,6 @@ function subscribeToInventoryChanges() {
             switchView('settings');
         }
 
-        // Pull latest profile data from Supabase customer_profiles table
         async function loadUserSettings() {
             if (!currentUser) return;
 
@@ -758,7 +831,7 @@ function subscribeToInventoryChanges() {
             document.getElementById('userPrimaryAddress').value = currentUser.address || "";
 
             try {
-                const { data, error } = await supabaseClient
+                const { data } = await supabaseClient
                     .from('customer_profiles')
                     .select('*')
                     .eq('email', currentUser.email.toLowerCase())
@@ -787,7 +860,6 @@ function subscribeToInventoryChanges() {
             renderPayments();
         }
 
-        // Save user profile details directly to Supabase customer_profiles table
         async function saveUserProfile(e) {
             e.preventDefault();
             const btn = document.getElementById('saveProfileBtn');
@@ -850,7 +922,6 @@ function subscribeToInventoryChanges() {
             addresses.push(newAddr);
             localStorage.setItem('aura_addresses', JSON.stringify(addresses));
 
-            // Also sync primary address to Supabase customer_profiles if signed in
             if (currentUser && currentUser.email) {
                 const formattedAddress = `${newAddr.street}, ${newAddr.city}, ${newAddr.zip}`;
                 currentUser.address = formattedAddress;
@@ -956,7 +1027,6 @@ function subscribeToInventoryChanges() {
             renderPayments();
         }
 
-        // Fetch live orders for the signed-in user directly from Supabase orders table
         async function renderOrders() {
             const list = document.getElementById('ordersList');
             if (!list || !currentUser) return;
@@ -1035,87 +1105,244 @@ function subscribeToInventoryChanges() {
             }
         }
 
-        function openProductModal(productId) {
-            selectedProductId = productId;
-            const product = storeProducts.find(p => p.id === productId);
+        // Product Modal with Multi-Image Gallery, Quantity Stepper, & Real Reviews
+        function openProductModal(id) {
+            const product = storeProducts.find(p => p.id === id);
             if (!product) return;
 
-            const modalContent = document.getElementById('modalProductContent');
-            const reviews = productReviews[productId] || [];
+            let reviews = productReviews[product.id] || [];
             let avgRating = 5.0;
             if (reviews.length > 0) {
                 const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
                 avgRating = (sum / reviews.length).toFixed(1);
             }
 
-            modalContent.innerHTML = `
-                <div class="flex flex-col md:flex-row gap-6">
-                    <img src="${product.image}" class="w-full md:w-1/2 h-64 object-cover rounded-2xl border" alt="${product.name}">
-                    <div class="flex-1 space-y-3">
-                        <span class="text-xs font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">${product.category}</span>
-                        <h3 class="text-2xl font-bold text-slate-900">${product.name}</h3>
-                        <p class="text-xl font-extrabold text-slate-900">$${Number(product.price).toFixed(2)}</p>
-                        <div class="flex items-center gap-1 text-amber-500 text-sm font-bold">
-                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
-                            <span>${avgRating}</span>
-                            <span class="text-slate-400 font-normal">(${reviews.length} reviews)</span>
-                        </div>
-                        <button onclick="addToCart(${product.id}); closeProductModal();" type="button" class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold hover:bg-violet-700 transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
-                            <i data-lucide="shopping-cart" class="w-4 h-4"></i> Add To Cart
+            let imagesList = [];
+            if (Array.isArray(product.images) && product.images.length > 0) {
+                imagesList = product.images;
+            } else if (product.image) {
+                imagesList = [product.image];
+            } else {
+                imagesList = ['https://via.placeholder.com/400'];
+            }
+
+            let stockStatusHTML = '';
+            let isOutOfStock = (product.inventory_count === 0);
+            if (isOutOfStock) {
+                stockStatusHTML = `<span class="bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Sold Out</span>`;
+            } else if (product.inventory_count <= 5) {
+                stockStatusHTML = `<span class="bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider animate-pulse">Only ${product.inventory_count} left in stock!</span>`;
+            } else {
+                stockStatusHTML = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold">In Stock (${product.inventory_count} available)</span>`;
+            }
+
+            const modalContainer = document.getElementById('productModal');
+            if (!modalContainer) return;
+
+            modalContainer.innerHTML = `
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                        <button onclick="closeProductModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full cursor-pointer transition">
+                            <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
-                    </div>
-                </div>
-                <div class="border-t pt-6 space-y-4">
-                    <h4 class="font-bold text-lg text-slate-900">Customer Reviews</h4>
-                    <form onsubmit="handleReviewSubmit(event)" class="bg-slate-50 p-4 rounded-2xl border space-y-3">
-                        <h5 class="text-xs font-bold uppercase tracking-wider text-slate-600">Leave a Review</h5>
-                        <select id="reviewRating" class="p-1 border rounded-lg text-xs font-bold outline-none bg-white">
-                            <option value="5">5 Stars</option>
-                            <option value="4">4 Stars</option>
-                            <option value="3">3 Stars</option>
-                            <option value="2">2 Stars</option>
-                            <option value="1">1 Star</option>
-                        </select>
-                        <textarea id="reviewComment" placeholder="Write your review here..." required class="w-full p-2.5 border rounded-xl text-xs outline-none bg-white"></textarea>
-                        <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-violet-600 transition cursor-pointer">Post Review</button>
-                    </form>
-                    <div class="space-y-3 max-h-60 overflow-y-auto">
-                        ${reviews.length === 0 ? `<p class="text-xs text-slate-400">No reviews yet.</p>` : reviews.map(r => `
-                            <div class="border-b pb-3 space-y-1">
-                                <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-800">${r.name}</span><span class="text-[10px] text-slate-400">${r.date}</span></div>
-                                <div class="flex items-center text-amber-500 text-xs">${'<i data-lucide="star" class="w-3 h-3 fill-current"></i>'.repeat(r.rating)}</div>
-                                <p class="text-xs text-slate-600">${r.comment}</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div class="space-y-3">
+                                <div class="h-64 bg-slate-100 rounded-2xl overflow-hidden border">
+                                    <img id="mainProductPreviewImg" src="${imagesList[0]}" class="w-full h-full object-cover" alt="${product.name}">
+                                </div>
+                                ${imagesList.length > 1 ? `
+                                    <div class="flex gap-2 overflow-x-auto pb-1">
+                                        ${imagesList.map((imgUrl) => `
+                                            <img src="${imgUrl}" onclick="document.getElementById('mainProductPreviewImg').src='${imgUrl}'" class="w-14 h-14 rounded-xl object-cover border-2 cursor-pointer hover:border-violet-600 transition" alt="Thumbnail">
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
                             </div>
-                        `).join('')}
+
+                            <div class="space-y-4">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">${product.category}</span>
+                                    <h2 class="text-2xl font-extrabold text-slate-900 mt-2">${product.name}</h2>
+                                    
+                                    <div class="flex items-center gap-1.5 mt-2">
+                                        <div class="flex items-center text-amber-500">
+                                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                        </div>
+                                        <span class="text-xs font-bold text-slate-700 ml-1">${avgRating}</span>
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-xs text-slate-500">${reviews.length} Verified Reviews</span>
+                                    </div>
+                                </div>
+
+                                <div class="text-2xl font-black text-slate-900">
+                                    $${Number(product.price).toFixed(2)}
+                                </div>
+
+                                <div>
+                                    ${stockStatusHTML}
+                                </div>
+
+                                <div class="border-t pt-3">
+                                    <h4 class="text-xs font-bold uppercase text-slate-400 mb-1">Product Description</h4>
+                                    <p class="text-sm text-slate-600 leading-relaxed">
+                                        ${product.description ? escapeHTML(product.description) : 'No detailed description provided for this product yet.'}
+                                    </p>
+                                </div>
+
+                                <!-- Customer Reviews Section -->
+                                <div class="border-t pt-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h4 class="text-xs font-bold uppercase text-slate-400">Customer Reviews</h4>
+                                        <button onclick="openReviewModal(${product.id})" class="text-xs font-bold text-violet-600 hover:underline cursor-pointer">+ Write a Review</button>
+                                    </div>
+                                    <div class="space-y-2 max-h-32 overflow-y-auto">
+                                        ${reviews.length > 0 ? reviews.map(r => `
+                                            <div class="bg-slate-50 p-2.5 rounded-xl border text-xs space-y-1">
+                                                <div class="flex justify-between font-bold text-slate-800">
+                                                    <span>${escapeHTML(r.name)}</span>
+                                                    <span class="text-amber-500">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                                                </div>
+                                                <p class="text-slate-600 font-normal">${escapeHTML(r.comment)}</p>
+                                            </div>
+                                        `).join('') : '<p class="text-xs text-slate-400 italic">No reviews yet. Be the first to review!</p>'}
+                                    </div>
+                                </div>
+
+                                <!-- Quantity Stepper Controls -->
+                                ${!isOutOfStock ? `
+                                    <div class="flex items-center justify-between border-t pt-4">
+                                        <span class="text-xs font-bold uppercase text-slate-500">Quantity</span>
+                                        <div class="flex items-center border rounded-xl overflow-hidden bg-slate-50">
+                                            <button type="button" onclick="adjustModalQty(-1, ${product.inventory_count})" class="px-3 py-1.5 text-slate-600 hover:bg-slate-200 transition font-bold cursor-pointer">-</button>
+                                            <input type="number" id="modalProductQty" value="1" min="1" max="${product.inventory_count}" readonly class="w-12 text-center text-xs font-bold bg-transparent outline-none">
+                                            <button type="button" onclick="adjustModalQty(1, ${product.inventory_count})" class="px-3 py-1.5 text-slate-600 hover:bg-slate-200 transition font-bold cursor-pointer">+</button>
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                <div class="pt-2">
+                                    <button onclick="${isOutOfStock ? '' : `addModalItemToCart(${product.id})`}" ${isOutOfStock ? 'disabled' : ''} class="w-full py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 shadow-md ${
+                                        isOutOfStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-violet-600 cursor-pointer'
+                                    }">
+                                        <i data-lucide="${isOutOfStock ? 'ban' : 'shopping-cart'}" class="w-4 h-4"></i> ${isOutOfStock ? 'Sold Out' : 'Add To Cart'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
-            document.getElementById('productModal').classList.remove('hidden');
+            modalContainer.classList.remove('hidden');
             lucide.createIcons();
         }
 
-        function closeProductModal() {
-            document.getElementById('productModal').classList.add('hidden');
+        function adjustModalQty(change, maxStock) {
+            const input = document.getElementById('modalProductQty');
+            if (!input) return;
+            let currentVal = parseInt(input.value) || 1;
+            let newVal = currentVal + change;
+            if (newVal < 1) newVal = 1;
+            if (newVal > maxStock) newVal = maxStock;
+            input.value = newVal;
         }
 
-        function handleReviewSubmit(e) {
-            e.preventDefault();
-            if (!selectedProductId) return;
+        function addModalItemToCart(productId) {
+            const qtyInput = document.getElementById('modalProductQty');
+            const quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+            addToCartWithQuantity(productId, quantity);
+            closeProductModal();
+        }
 
-            const newReview = {
-                name: currentUser ? currentUser.name : "Verified Buyer",
-                rating: parseInt(document.getElementById('reviewRating').value),
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                comment: document.getElementById('reviewComment').value
-            };
+        function closeProductModal() {
+            const modalContainer = document.getElementById('productModal');
+            if (modalContainer) {
+                modalContainer.classList.add('hidden');
+                modalContainer.innerHTML = '';
+            }
+        }
 
-            if (!productReviews[selectedProductId]) productReviews[selectedProductId] = [];
-            productReviews[selectedProductId].unshift(newReview);
-            localStorage.setItem('aura_product_reviews', JSON.stringify(productReviews));
-            openProductModal(selectedProductId);
+        function openReviewModal(productId) {
+            document.getElementById('reviewProductId').value = productId;
+            document.getElementById('reviewModal').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.add('hidden');
+        }
+
+        // Global product reviews cache loaded from Supabase
+let loadedProductReviews = {};
+
+// 1. Fetch reviews for all products from Supabase
+async function loadProductReviews() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('reviews')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        productReviews = {};
+        if (data) {
+            data.forEach(r => {
+                if (!productReviews[r.product_id]) {
+                    productReviews[r.product_id] = [];
+                }
+                productReviews[r.product_id].push({
+                    id: r.id,
+                    name: r.name,
+                    rating: r.rating,
+                    comment: r.comment,
+                    date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                });
+            });
+        }
+        
+        // Refresh UI if storefront is active
+        if (typeof renderProducts === 'function') {
             renderProducts();
         }
+    } catch (err) {
+        console.error('Error loading reviews from Supabase:', err.message);
+    }
+}
 
+// 2. Submit a review directly to Supabase cloud
+async function handleReviewSubmit(e) {
+    e.preventDefault();
+    const productId = Number(document.getElementById('reviewProductId').value);
+    const name = document.getElementById('reviewerName').value.trim();
+    const rating = parseInt(document.getElementById('reviewRating').value);
+    const comment = document.getElementById('reviewComment').value.trim();
+
+    try {
+        const { error } = await supabaseClient
+            .from('reviews')
+            .insert([{
+                product_id: productId,
+                name: name,
+                rating: rating,
+                comment: comment
+            }]);
+
+        if (error) throw error;
+
+        alert('Thank you! Your review has been published to the cloud.');
+        e.target.reset();
+        closeReviewModal();
+        
+        // Reload reviews from Supabase and update modal/grid
+        await loadProductReviews();
+        if (typeof openProductModal === 'function') {
+            openProductModal(productId);
+        }
+    } catch (err) {
+        console.error('Error saving review to Supabase:', err.message);
+        alert('Failed to publish review: ' + err.message);
+    }
+}
         function openContactModal() {
             document.getElementById('contactModal').classList.remove('hidden');
             lucide.createIcons();
@@ -1138,6 +1365,7 @@ function subscribeToInventoryChanges() {
             updateAuthUI();
             loadStorefrontProducts();
             updateCartUI();
+            loadProductReviews();
             if (currentUser) {
                 loadUserSettings();
             }
@@ -1147,8 +1375,6 @@ function subscribeToInventoryChanges() {
     <!-- Footer Section -->
     <footer class="bg-white border-t border-slate-200 mt-20 pt-12 pb-8 px-4 lg:px-8">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-slate-100">
-            
-            <!-- Brand Info -->
             <div class="space-y-4 md:col-span-2">
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('store')">
                     <div class="bg-gradient-to-tr from-violet-600 to-indigo-600 text-white p-2 rounded-xl font-bold tracking-wider shadow-md text-xs">AURA</div>
@@ -1159,7 +1385,6 @@ function subscribeToInventoryChanges() {
                 </p>
             </div>
 
-            <!-- Quick Links -->
             <div class="space-y-3">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900">Storefront</h4>
                 <ul class="space-y-2 text-xs font-semibold text-slate-600">
@@ -1170,7 +1395,6 @@ function subscribeToInventoryChanges() {
                 </ul>
             </div>
 
-            <!-- Account & Admin -->
             <div class="space-y-3">
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900">Management</h4>
                 <ul class="space-y-2 text-xs font-semibold text-slate-600">
@@ -1180,10 +1404,8 @@ function subscribeToInventoryChanges() {
                     <li><button onclick="openContactModal()" class="hover:text-violet-600 transition cursor-pointer">Contact Us</button></li>
                 </ul>
             </div>
-
         </div>
 
-        <!-- Copyright Bar -->
         <div class="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 gap-4">
             <p>&copy; 2026 Aura Store. All rights reserved.</p>
             <div class="flex space-x-6">
@@ -1194,148 +1416,90 @@ function subscribeToInventoryChanges() {
         </div>
     </footer>
 
-<!-- AI Shopping Assistant Floating Widget -->
- 
-<div id="aiChatWidget" class="fixed bottom-6 right-6 z-50">
-    <button onclick="toggleAIChat()" id="aiChatToggleBtn" class="bg-violet-600 hover:bg-violet-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition cursor-pointer">
-        <i data-lucide="bot" class="w-7 h-7"></i>
-    </button>
-    <!-- Place this directly below your chatbot avatar element -->
-<div class="text-[10px] font-bold text-slate-400 text-center tracking-wider mt-1">Oliver</div>
-
-    <div id="aiChatWindow" class="hidden absolute bottom-16 right-0 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden transition-all">
-        <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center font-bold text-xs">AI</div>
-                <div>
-                    <h3 class="text-sm font-bold">Aura Shopping Assistant</h3>
-                    <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online & Interactive
-                    </p>
-                </div>
-            </div>
-            <button onclick="toggleAIChat()" class="text-slate-400 hover:text-white cursor-pointer">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-
-        <div id="aiChatMessages" class="p-4 h-80 overflow-y-auto space-y-3 text-xs bg-slate-50 flex flex-col">
-            <div class="bg-violet-50 text-slate-800 p-3 rounded-2xl max-w-[85%] self-start border border-violet-100">
-                Hi there! 👋 I'm Oliver, your interactive Aura Store shopping guide. Ask me anything about our products, recommendations, or stock!
-            </div>
-        </div>
-
-        <form onsubmit="handleInteractiveAISubmit(event)" class="p-3 bg-white border-t flex gap-2">
-            <input type="text" id="aiChatInput" placeholder="Ask me anything..." class="flex-1 p-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-violet-500">
-            <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer">
-                <i data-lucide="send" class="w-4 h-4"></i>
-            </button>
-        </form>
-    </div>
-</div>
-
-<script>
-    // Keep track of conversation history for a natural back-and-forth dialogue
-    let chatConversationHistory = [];
-
-    function toggleAIChat() {
-        const windowEl = document.getElementById('aiChatWindow');
-        windowEl.classList.toggle('hidden');
-        lucide.createIcons();
-    }
-
-    async function handleInteractiveAISubmit(e) {
-        e.preventDefault();
-        const inputField = document.getElementById('aiChatInput');
-        const userText = inputField.value.trim();
-        if (!userText) return;
-
-        const messagesContainer = document.getElementById('aiChatMessages');
-
-        // 1. Render User Message
-        messagesContainer.innerHTML += `
-            <div class="bg-violet-600 text-white p-3 rounded-2xl max-w-[85%] self-end shadow-xs">
-                ${escapeHTML(userText)}
-            </div>
-        `;
-        inputField.value = '';
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        // Show typing indicator
-        const typingId = 'typing_' + Date.now();
-        messagesContainer.innerHTML += `
-            <div id="${typingId}" class="bg-white text-slate-400 p-3 rounded-2xl max-w-[85%] self-start border border-slate-200 shadow-xs italic">
-                Thinking...
-            </div>
-        `;
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        // 2. Build live context from Supabase products
-        let catalogSummary = "No products currently loaded.";
-        if (window.storeProducts && window.storeProducts.length > 0) {
-            catalogSummary = window.storeProducts.map(p => 
-                `- Name: ${p.name}, Category: ${p.category}, Price: $${p.price}, Stock: ${p.inventory_count}, Description: ${p.description || 'None'}`
-            ).join('\n');
+    <!-- Interactive AI Assistant Script -->
+    <script>
+        function toggleAIChat() {
+            const windowEl = document.getElementById('aiChatWindow');
+            windowEl.classList.toggle('hidden');
+            lucide.createIcons();
         }
 
-        // 3. Interactive Intelligent Logic (Handles multi-turn Q&A gracefully)
-        setTimeout(() => {
-            document.getElementById(typingId).remove();
-            
-            let aiReply = generateSmartResponse(userText, catalogSummary);
+        async function handleInteractiveAISubmit(e) {
+            e.preventDefault();
+            const inputField = document.getElementById('aiChatInput');
+            const userText = inputField.value.trim();
+            if (!userText) return;
+
+            const messagesContainer = document.getElementById('aiChatMessages');
 
             messagesContainer.innerHTML += `
-                <div class="bg-white text-slate-800 p-3 rounded-2xl max-w-[85%] self-start border border-slate-200 shadow-xs space-y-1">
-                    ${aiReply}
+                <div class="bg-violet-600 text-white p-3 rounded-2xl max-w-[85%] self-end shadow-xs">
+                    ${escapeHTML(userText)}
+                </div>
+            `;
+            inputField.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            const typingId = 'typing_' + Date.now();
+            messagesContainer.innerHTML += `
+                <div id="${typingId}" class="bg-white text-slate-400 p-3 rounded-2xl max-w-[85%] self-start border border-slate-200 shadow-xs italic">
+                    Thinking...
                 </div>
             `;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 600);
-    }
 
-    function generateSmartResponse(query, catalog) {
-        const q = query.toLowerCase();
-        
-        // Handle greetings / general chat
-        if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
-            return "Hello! How can I help you explore our store today? Looking for recommendations or details on a specific item?";
+            setTimeout(() => {
+                document.getElementById(typingId).remove();
+                let aiReply = generateSmartResponse(userText);
+
+                messagesContainer.innerHTML += `
+                    <div class="bg-white text-slate-800 p-3 rounded-2xl max-w-[85%] self-start border border-slate-200 shadow-xs space-y-1">
+                        ${aiReply}
+                    </div>
+                `;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 600);
         }
-        
-        // Safely handle recommendations
-if (window.storeProducts && window.storeProducts.length > 0) {
-    const randomPick = window.storeProducts[Math.floor(Math.random() * window.storeProducts.length)];
-    return `I definitely recommend checking out the <span class="font-bold">${escapeHTML(randomPick.name)}</span>! It's in our ${escapeHTML(randomPick.category)} collection for just $${Number(randomPick.price).toFixed(2)}.`;
-} else {
-    return "Our product catalog is currently loading or empty. Please check back in a moment!";
-}
 
-        // Search through store products for specific answers
-        if (window.storeProducts) {
-            const matched = window.storeProducts.find(p => q.includes(p.name.toLowerCase()) || q.includes(p.category.toLowerCase()));
-            if (matched) {
-                const stockMsg = matched.inventory_count > 0 ? `In Stock (${matched.inventory_count} left)` : 'Sold Out';
-                return `Here is what I found for <span class="font-bold">${escapeHTML(matched.name)}</span>:<br>
-                - <span class="font-semibold">Category:</span> ${escapeHTML(matched.category)}<br>
-                - <span class="font-semibold">Price:</span> $${Number(matched.price).toFixed(2)}<br>
-                - <span class="font-semibold">Availability:</span> ${stockMsg}<br>
-                ${matched.description ? `- <span class="font-semibold">Details:</span> ${escapeHTML(matched.description)}` : ''}`;
+        function generateSmartResponse(query) {
+            const q = query.toLowerCase();
+            
+            if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
+                return "Hello! How can I help you explore our store today? Looking for recommendations or details on a specific item?";
             }
+            
+            if (q.includes('recommend') || q.includes('best') || q.includes('suggest')) {
+                if (window.storeProducts && window.storeProducts.length > 0) {
+                    const randomPick = window.storeProducts[Math.floor(Math.random() * window.storeProducts.length)];
+                    return `I definitely recommend checking out the <span class="font-bold">${escapeHTML(randomPick.name)}</span>! It's in our ${escapeHTML(randomPick.category)} collection for just $${Number(randomPick.price).toFixed(2)}.`;
+                }
+                return "Our product catalog is currently loading. Please check back in a moment!";
+            }
+
+            if (window.storeProducts) {
+                const matched = window.storeProducts.find(p => q.includes(p.name.toLowerCase()) || q.includes(p.category.toLowerCase()));
+                if (matched) {
+                    const stockMsg = matched.inventory_count > 0 ? `In Stock (${matched.inventory_count} left)` : 'Sold Out';
+                    return `Here is what I found for <span class="font-bold">${escapeHTML(matched.name)}</span>:<br>
+                    - <span class="font-semibold">Category:</span> ${escapeHTML(matched.category)}<br>
+                    - <span class="font-semibold">Price:</span> $${Number(matched.price).toFixed(2)}<br>
+                    - <span class="font-semibold">Availability:</span> ${stockMsg}<br>
+                    ${matched.description ? `- <span class="font-semibold">Details:</span> ${escapeHTML(matched.description)}` : ''}`;
+                }
+            }
+
+            if (q.includes('shipping') || q.includes('delivery')) {
+                return "We process all orders immediately and you can track fulfillment live right from your My Account dashboard!";
+            }
+
+            return `That's a great question! While I can see our live catalog, could you specify which product or category you are curious about?`;
         }
 
-        if (q.includes('shipping') || q.includes('delivery')) {
-            return "We process all orders immediately and you can track fulfillment live right from your My Account dashboard!";
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
-
-        return `That's a great question! While I can see our live catalog, could you specify which product or category you are curious about?`;
-    }
-
-    function escapeHTML(str) {
-        return str.replace(/[&<>'"]/g, 
-            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-        );
-    }
-</script>
-</script>
-
+    </script>
 </body>
 </html>
